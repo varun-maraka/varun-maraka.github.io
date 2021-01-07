@@ -6,12 +6,12 @@ Boilerplate and guide for a React/Sass/Redux build.
 
 ## Getting Started
 
----
+```
 .babelrc file should be present before building the chatbot.
 To build all the files into the destination.
 > npm build
 > npx webpack
----
+```
 To get started, first install all the necessary dependencies.
 ```
 > npm install
