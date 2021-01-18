@@ -1,11 +1,15 @@
+## Comments from Varun
+Url of the web page
+https://varun-maraka.github.io/
+> npx webpack   -- to build the project
+## Image
+
 ![](http://i.imgur.com/DUiL9yn.png)
 
 # React/Sass/Redux Boilerplate
 
 Boilerplate and guide for a React/Sass/Redux build.
-## Comments from Varun
-Url of the web page
-https://varun-maraka.github.io/
+
 ## Getting Started
 
 ```
