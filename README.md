@@ -2,6 +2,10 @@
 Url of the web page
 https://varun-maraka.github.io/
 > npx webpack   -- to build the project
+## About UI
+UI is coming from https://github.com/varun-maraka/watsonChatbot.git
+issue "npm run build" command in above repository then we get "dist" folder with bundle.js and styles.css
+.env file in that repository will be automatically updated into bundle.js
 ## Image
 
 ![](http://i.imgur.com/DUiL9yn.png)
