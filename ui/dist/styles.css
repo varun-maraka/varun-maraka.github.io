@@ -433,6 +433,12 @@ template {
 .chtBot_hght--478px {
   height: 478px; }
 
+.chtBot_hght--550px {
+  height: 550px; }
+
+.chtBot_hght--750px {
+  height: 750px; }
+
 .chtBot_hght--100per {
   height: 100%; }
 
@@ -554,8 +560,14 @@ template {
 .chtBot_wdth--340px {
   width: 340px; }
 
+.chtBot_wdth--550px {
+  width: 550px; }
+
 .chtBot_wdth--90per {
   width: 90%; }
+
+.chtBot_wdth--99per {
+  width: 99%; }
 
 .chtBot_wdth--100per {
   width: 100%; }
