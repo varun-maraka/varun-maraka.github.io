@@ -8,12 +8,16 @@ The built bot file goes to /ui/dist/bundle.js
 
 ToDo tasks in this
 1. Update icon correctly, currently few icons are not appearing.
-2. Open chat by default, currently chat is minimised by default.
 3. show all responses in the array and log them in google sheets.
-4. Increase chat size, currently it is small, if possible make the UI as shown in embed script.
 5. If session id don't  match with the response session id from heroku update it in UI
 6. Save conversation id in local storage and reuse after refresh
 7. change header and text.
+8. Create a menu and navigate for different apps
+9. Update home page with your profile
+
+Completed on 20 Jan 2021
+2. Open chat by default, currently chat is minimised by default.
+4. Increase chat size, currently it is small, if possible make the UI as shown in embed script.
 
 ## About UI
 UI is coming from https://github.com/varun-maraka/watsonChatbot.git
