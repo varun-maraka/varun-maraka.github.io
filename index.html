@@ -28,8 +28,16 @@
     <!-- Below is the code to add Dialog flow bot to the website -->
     <link rel="stylesheet" href="https://www.gstatic.com/dialogflow-console/fast/df-messenger/prod/v1/themes/df-messenger-default.css">
     <script src="https://www.gstatic.com/dialogflow-console/fast/df-messenger/prod/v1/df-messenger.js">
+        document.addEventListener('DOMContentLoaded', function () {
         const dfMessenger = document.querySelector('df-messenger');
-        dfMessenger.renderCustomText('Hello', true);
+        if (dfMessenger) {
+          dfMessenger.addEventListener('df-ready', function () {
+            dfMessenger.renderCustomText('Hello', true);
+          });
+        } else {
+          console.error('df-messenger element not found.');
+        }
+      });
     </script>
         <df-messenger
           location="us-central1"
