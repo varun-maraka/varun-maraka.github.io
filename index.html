@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>React Webpack</title>
+    <title>React Webpack from gh-pages branch</title>
 </head>
 <body>
 
@@ -26,7 +26,19 @@
     -->
    <!-- Below code is for Dialog flow integration -->
     <link rel="stylesheet" href="https://www.gstatic.com/dialogflow-console/fast/df-messenger/prod/v1/themes/df-messenger-default.css">
-<script src="https://www.gstatic.com/dialogflow-console/fast/df-messenger/prod/v1/df-messenger.js"></script>
+<script src="https://www.gstatic.com/dialogflow-console/fast/df-messenger/prod/v1/df-messenger.js">
+
+    document.addEventListener('DOMContentLoaded', function () {
+    const dfMessenger = document.querySelector('df-messenger');
+    if (dfMessenger) {
+      dfMessenger.addEventListener('df-ready', function () {
+        dfMessenger.renderCustomText('Hello', true);
+      });
+    } else {
+      console.error('df-messenger element not found.');
+    }
+  });
+</script>
 <df-messenger
   location="us-central1"
   project-id="vertexgeminidemo"
