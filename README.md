@@ -113,6 +113,12 @@ git push origin main
    - Go to Settings → Pages
    - Set source to `gh-pages` branch
 
+### Deploy issue
+On Feb 16, 2026  there was an issue in deployment
+I was deploying to gh-newMenu, but the code was getting built from gh-pages.
+Later I understood that code can be built and deployed without commit using above commands.
+
+Now I changed package.json deploy script to push to gh-newMenu branch, we can change it to what ever branch we want to push.
 ## Pages Overview
 
 ### Home Page
