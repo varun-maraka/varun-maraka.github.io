@@ -122,6 +122,18 @@ Now I changed package.json deploy script to push to gh-newMenu branch, we can ch
 
 * If auto deployment does not work do a manual deployment using command line.
 * Currently behaviour is overrideing the the pages branch that was set in Settings of GitHub.
+
+###Deployment Architecture:
+
+gh-newMenu branch - Your source code (React components, CSS, JavaScript)
+gh-pages branch - The built/production code that GitHub Pages serves
+The Process:
+
+You write code on gh-newMenu branch
+When you run npm run deploy, it:
+Builds the React app → creates build folder
+Takes contents of build folder → pushes to gh-pages branch
+GitHub Pages reads from gh-pages branch and serves it to https://varun-maraka.github.io/
 ## Pages Overview
 
 ### Home Page
