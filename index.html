@@ -2,38 +2,58 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Varun Maraka Personal webstie</title>
-    <link rel="stylesheet" href="dev/css/index.css">
-    <link rel="stylesheet" href="dev/css/main.css">
-    <link rel="stylesheet" href="dev/css/font-awesome.min.css">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Application</title>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <nav class="navbar">
+        <div class="navbar-container">
+            <div class="navbar-brand">My App</div>
+            <button class="hamburger-menu" id="hamburger">
+                <span></span>
+                <span></span>
+                <span></span>
+            </button>
+            <ul class="menu-list" id="menuList">
+                <li class="menu-item"><a href="#home" class="menu-link">Home</a></li>
+                <li class="menu-item"><a href="#about" class="menu-link">About</a></li>
+                <li class="menu-item"><a href="#services" class="menu-link">Services</a></li>
+                <li class="menu-item"><a href="#contact" class="menu-link">Contact</a></li>
+            </ul>
+        </div>
+    </nav>
 
-    <div id="root"></div>
-    <script src="js/bundle.min.js"></script>
-</script>
-<df-messenger
-  location="us-central1"
-  project-id="vertexgeminidemo"
-  agent-id="1709364f-9414-4f9d-8fb9-31e479ecea6b"
-  language-code="en"
-  max-query-length="-1">
-  <df-messenger-chat-bubble
-   chat-title="FirstMDHSBotSample">
-  </df-messenger-chat-bubble>
-</df-messenger>
-<style>
-  df-messenger {
-    z-index: 999;
-    position: fixed;
-    --df-messenger-font-color: #000;
-    --df-messenger-font-family: Google Sans;
-    --df-messenger-chat-background: #f3f6fc;
-    --df-messenger-message-user-background: #d3e3fd;
-    --df-messenger-message-bot-background: #fff;
-    bottom: 16px;
-    right: 16px;
-  }
-</style>
+    <main class="content">
+        <section id="home">
+            <h1>Welcome to My Application</h1>
+            <p>This is a fresh new webpage with a functional hamburger menu.</p>
+            <button class="btn btn-primary">Primary Button</button>
+            <button class="btn btn-success">Success Button</button>
+            <button class="btn btn-danger">Delete Button</button>
+            <button class="btn btn-warning">Warning Button</button>
+        </section>
+
+        <section id="about">
+            <h2>About Section</h2>
+            <p>Click the hamburger menu on mobile to navigate between sections.</p>
+        </section>
+
+        <section id="services">
+            <h2>Services</h2>
+            <p>Our services are designed to meet your needs.</p>
+        </section>
+
+        <section id="contact">
+            <h2>Contact</h2>
+            <p>Get in touch with us today!</p>
+        </section>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2026 My Application. All rights reserved.</p>
+    </footer>
+
+    <script src="script.js"></script>
 </body>
 </html>
