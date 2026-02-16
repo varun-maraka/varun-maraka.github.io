@@ -1,26 +1,33 @@
 import React from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { toggleMenu, setActivePage } from '../redux/actions';
+import { toggleMenu, closeMenu } from '../redux/actions';
 import './Menu.css';
 
-const Menu = () => {
+const MenuItem = ({ to, label, isActive, onNavigate }) => (
+    <li className="menu-item">
+        <a href={`#${to}`} onClick={onNavigate} className={`menu-link ${isActive ? 'active' : ''}`}>
+            {label}
+        </a>
+    </li>
+);
+
+const Menu = ({ currentPath }) => {
     const dispatch = useDispatch();
     const isMenuOpen = useSelector(state => state.isMenuOpen);
-    const activePage = useSelector(state => state.activePage);
-
-    const handleMenuItemClick = (page) => {
-        dispatch(setActivePage(page));
-    };
 
     const handleHamburgerClick = () => {
         dispatch(toggleMenu());
+    };
+
+    const handleMenuItemClick = () => {
+        dispatch(closeMenu());
     };
 
     return (
         <nav className="navbar">
             <div className="navbar-container">
                 <div className="navbar-brand">My App</div>
-                <button 
+                <button
                     className={`hamburger-menu ${isMenuOpen ? 'active' : ''}`}
                     onClick={handleHamburgerClick}
                     aria-label="Toggle menu"
@@ -30,38 +37,10 @@ const Menu = () => {
                     <span></span>
                 </button>
                 <ul className={`menu-list ${isMenuOpen ? 'active' : ''}`}>
-                    <li className="menu-item">
-                        <a 
-                            onClick={() => handleMenuItemClick('home')}
-                            className={`menu-link ${activePage === 'home' ? 'active' : ''}`}
-                        >
-                            Home
-                        </a>
-                    </li>
-                    <li className="menu-item">
-                        <a 
-                            onClick={() => handleMenuItemClick('about')}
-                            className={`menu-link ${activePage === 'about' ? 'active' : ''}`}
-                        >
-                            About
-                        </a>
-                    </li>
-                    <li className="menu-item">
-                        <a 
-                            onClick={() => handleMenuItemClick('notesapp')}
-                            className={`menu-link ${activePage === 'notesapp' ? 'active' : ''}`}
-                        >
-                            Notes App
-                        </a>
-                    </li>
-                    <li className="menu-item">
-                        <a 
-                            onClick={() => handleMenuItemClick('contact')}
-                            className={`menu-link ${activePage === 'contact' ? 'active' : ''}`}
-                        >
-                            Contact
-                        </a>
-                    </li>
+                    <MenuItem to="/" label="Home" isActive={currentPath === '/'} onNavigate={handleMenuItemClick} />
+                    <MenuItem to="/about" label="About" isActive={currentPath === '/about'} onNavigate={handleMenuItemClick} />
+                    <MenuItem to="/notes-app" label="Notes App" isActive={currentPath === '/notes-app'} onNavigate={handleMenuItemClick} />
+                    <MenuItem to="/contact" label="Contact" isActive={currentPath === '/contact'} onNavigate={handleMenuItemClick} />
                 </ul>
             </div>
         </nav>
