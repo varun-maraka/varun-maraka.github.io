@@ -66,3 +66,143 @@
     font-size: 2em;
     margin-bottom: 20px;
 }
+
+/* Hamburger Menu Styles */
+.menu-header {
+    display: flex;
+    align-items: center;
+    padding: 0 16px;
+    height: 56px;
+}
+
+.menu-title {
+    color: #ecf0f1;
+    font-weight: 600;
+    font-size: 1.2em;
+    margin-left: 12px;
+}
+
+.hamburger-menu {
+    display: flex;
+    flex-direction: column;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+    gap: 5px;
+    margin-right: 16px;
+}
+
+.hamburger-menu span {
+    width: 25px;
+    height: 3px;
+    background-color: #ecf0f1;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+}
+
+/* Responsive menu */
+@media (max-width: 768px) {
+    .menu-list {
+        display: none;
+        flex-direction: column;
+        position: absolute;
+        top: 56px;
+        left: 0;
+        right: 0;
+        background-color: #225285;
+        border-top: 1px solid rgba(255, 255, 255, 0.1);
+    }
+
+    .menu-list.open {
+        display: flex;
+    }
+
+    .menu-item {
+        width: 100%;
+    }
+
+    .menu-link {
+        padding: 12px 20px;
+        border-bottom: none;
+    }
+}
+
+@media (min-width: 769px) {
+    .hamburger-menu {
+        display: none;
+    }
+
+    .menu-nav {
+        position: relative;
+    }
+
+    .menu-list {
+        flex-direction: row;
+        position: static;
+        display: flex !important;
+        background-color: transparent;
+        border-top: none;
+    }
+}
+
+/* New Button Styles */
+.btn-primary {
+    background-color: #2980b9;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.btn-primary:hover {
+    background-color: #3498db;
+}
+
+.btn-success {
+    background-color: #27ae60;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.btn-success:hover {
+    background-color: #2ecc71;
+}
+
+.btn-danger {
+    background-color: #e74c3c;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.btn-danger:hover {
+    background-color: #c0392b;
+}
+
+.btn-warning {
+    background-color: #f39c12;
+    color: white;
+    padding: 10px 20px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: background-color 0.3s ease;
+}
+
+.btn-warning:hover {
+    background-color: #e67e22;
+}
