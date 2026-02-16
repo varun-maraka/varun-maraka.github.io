@@ -1,11 +1,10 @@
 export const TOGGLE_MENU = 'TOGGLE_MENU';
-export const SET_ACTIVE_PAGE = 'SET_ACTIVE_PAGE';
+export const CLOSE_MENU = 'CLOSE_MENU';
 
 export const toggleMenu = () => ({
     type: TOGGLE_MENU
 });
 
-export const setActivePage = (page) => ({
-    type: SET_ACTIVE_PAGE,
-    payload: page
+export const closeMenu = () => ({
+    type: CLOSE_MENU
 });

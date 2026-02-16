@@ -1,8 +1,7 @@
-import { TOGGLE_MENU, SET_ACTIVE_PAGE } from './actions';
+import { TOGGLE_MENU, CLOSE_MENU } from './actions';
 
 const initialState = {
-    isMenuOpen: false,
-    activePage: 'home'
+    isMenuOpen: false
 };
 
 export const rootReducer = (state = initialState, action) => {
@@ -12,10 +11,9 @@ export const rootReducer = (state = initialState, action) => {
                 ...state,
                 isMenuOpen: !state.isMenuOpen
             };
-        case SET_ACTIVE_PAGE:
+        case CLOSE_MENU:
             return {
                 ...state,
-                activePage: action.payload,
                 isMenuOpen: false
             };
         default:

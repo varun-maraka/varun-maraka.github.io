@@ -1,67 +1,58 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useDispatch, useSelector } from 'react-redux';
-import { toggleMenu, setActivePage } from '../redux/actions';
+import { toggleMenu, closeMenu } from '../redux/actions';
 import './Menu.css';
+
+const navLinks = [
+    { label: 'Home', route: '#/' },
+    { label: 'About', route: '#/about' },
+    { label: 'Notes App', route: '#/notesapp' },
+    { label: 'Contact', route: '#/contact' }
+];
+
+const getCurrentRoute = () => window.location.hash || '#/';
 
 const Menu = () => {
     const dispatch = useDispatch();
-    const isMenuOpen = useSelector(state => state.isMenuOpen);
-    const activePage = useSelector(state => state.activePage);
+    const isMenuOpen = useSelector((state) => state.isMenuOpen);
+    const [currentRoute, setCurrentRoute] = useState(getCurrentRoute());
 
-    const handleMenuItemClick = (page) => {
-        dispatch(setActivePage(page));
-    };
+    useEffect(() => {
+        const handleRouteChange = () => {
+            setCurrentRoute(getCurrentRoute());
+            dispatch(closeMenu());
+        };
 
-    const handleHamburgerClick = () => {
-        dispatch(toggleMenu());
-    };
+        window.addEventListener('hashchange', handleRouteChange);
+        return () => window.removeEventListener('hashchange', handleRouteChange);
+    }, [dispatch]);
 
     return (
         <nav className="navbar">
             <div className="navbar-container">
                 <div className="navbar-brand">My App</div>
-                <button 
+                <button
                     className={`hamburger-menu ${isMenuOpen ? 'active' : ''}`}
-                    onClick={handleHamburgerClick}
+                    onClick={() => dispatch(toggleMenu())}
                     aria-label="Toggle menu"
+                    aria-expanded={isMenuOpen}
                 >
                     <span></span>
                     <span></span>
                     <span></span>
                 </button>
                 <ul className={`menu-list ${isMenuOpen ? 'active' : ''}`}>
-                    <li className="menu-item">
-                        <a 
-                            onClick={() => handleMenuItemClick('home')}
-                            className={`menu-link ${activePage === 'home' ? 'active' : ''}`}
-                        >
-                            Home
-                        </a>
-                    </li>
-                    <li className="menu-item">
-                        <a 
-                            onClick={() => handleMenuItemClick('about')}
-                            className={`menu-link ${activePage === 'about' ? 'active' : ''}`}
-                        >
-                            About
-                        </a>
-                    </li>
-                    <li className="menu-item">
-                        <a 
-                            onClick={() => handleMenuItemClick('notesapp')}
-                            className={`menu-link ${activePage === 'notesapp' ? 'active' : ''}`}
-                        >
-                            Notes App
-                        </a>
-                    </li>
-                    <li className="menu-item">
-                        <a 
-                            onClick={() => handleMenuItemClick('contact')}
-                            className={`menu-link ${activePage === 'contact' ? 'active' : ''}`}
-                        >
-                            Contact
-                        </a>
-                    </li>
+                    {navLinks.map(({ label, route }) => (
+                        <li className="menu-item" key={route}>
+                            <a
+                                href={route}
+                                onClick={() => dispatch(closeMenu())}
+                                className={`menu-link ${currentRoute === route ? 'active' : ''}`}
+                            >
+                                {label}
+                            </a>
+                        </li>
+                    ))}
                 </ul>
             </div>
         </nav>
