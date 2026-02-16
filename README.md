@@ -1,66 +1,228 @@
-## Comments from Varun
-Url of the web page
-https://varun-maraka.github.io/
-> npx webpack   -- to build the project
-The bot in this is built from a different project show beelow
-https://github.com/varun-maraka/watsonChatbot.git 
-The built bot file goes to /ui/dist/bundle.js
+# React Menu App with GitHub Pages
 
-ToDo tasks in this
-1. Update icon correctly, currently few icons are not appearing.
-3. show all responses in the array and log them in google sheets.
-5. If session id don't  match with the response session id from heroku update it in UI
-6. Save conversation id in local storage and reuse after refresh
-7. change header and text.
-8. Create a menu and navigate for different apps
-9. Update home page with your profile
+A React application with React Router that works seamlessly on GitHub Pages. Each menu item loads its own dedicated page without refreshing the entire site.
 
-Completed on 20 Jan 2021
-2. Open chat by default, currently chat is minimised by default.
-4. Increase chat size, currently it is small, if possible make the UI as shown in embed script.
+## Features
 
-## About UI
-UI is coming from https://github.com/varun-maraka/watsonChatbot.git
-issue "npm run build" command in above repository then we get "dist" folder with bundle.js and styles.css
-.env file in that repository will be automatically updated into bundle.js
-## Image
+✅ **4 Menu Items** - Home, About, Services, Contact  
+✅ **Separate Pages** - Each menu item has its own dedicated content  
+✅ **React Router Integration** - Smooth client-side navigation  
+✅ **GitHub Pages Compatible** - Works perfectly on GitHub Pages  
+✅ **Hamburger Menu** - Responsive mobile-friendly navigation  
+✅ **Modern Styling** - Clean and professional design  
+✅ **Form Handling** - Contact form with validation  
 
-![](http://i.imgur.com/DUiL9yn.png)
+## Tech Stack
 
-# React/Sass/Redux Boilerplate
+- **React** 18.2.0
+- **React Router DOM** 6.20.0
+- **react-scripts** 5.0.1
+- **gh-pages** - For GitHub Pages deployment
 
-Boilerplate and guide for a React/Sass/Redux build.
-
-## Getting Started
+## Project Structure
 
 ```
-.babelrc file should be present before building the chatbot.
-To build all the files into the destination.
-> npm build
-> npx webpack
-```
-To get started, first install all the necessary dependencies.
-```
-> npm install
+src/
+├── components/
+│   ├── Navigation.js       # Navigation menu component
+│   └── Navigation.css      # Navigation styling
+├── pages/
+│   ├── Home.js             # Home page
+│   ├── About.js            # About page
+│   ├── Services.js         # Services page
+│   ├── Contact.js          # Contact page
+│   └── Pages.css           # Pages styling
+├── App.js                  # Main app component
+├── App.css                 # App styling
+├── index.js                # React entry point
+└── index.css               # Global styles
+
+public/
+└── index.html              # HTML template
+
+package.json                # Dependencies and scripts
 ```
 
-Run an initial webpack build
-```
-> webpack
+## Installation
+
+### Prerequisites
+- Node.js (v14 or higher)
+- npm (v6 or higher)
+
+### Setup
+
+1. **Clone the repository:**
+```bash
+git clone https://github.com/varun-maraka/varun-maraka.github.io.git
+cd varun-maraka.github.io
 ```
 
-Start the development server (changes will now update live in browser)
+2. **Install dependencies:**
+```bash
+npm install
 ```
-> npm run start
+
+## Running the Application
+
+### Development Mode
+
+Start the development server:
+```bash
+npm start
 ```
 
-To view your project, go to: [http://localhost:3000/](http://localhost:3000/)
+The app will open automatically at `http://localhost:3000`
 
-## Links
+### Production Build
 
-- [Donate](https://www.patreon.com/thenewboston)
-- [thenewboston.com](https://thenewboston.com/)
-- [Facebook](https://www.facebook.com/TheNewBoston-464114846956315/)
-- [Twitter](https://twitter.com/bucky_roberts)
-- [Google+](https://plus.google.com/+BuckyRoberts)
-- [reddit](https://www.reddit.com/r/thenewboston/)
+Build for production:
+```bash
+npm build
+```
+
+Creates an optimized build in the `build/` folder.
+
+## Deployment to GitHub Pages
+
+### Automatic Deploy (Recommended)
+
+```bash
+npm run deploy
+```
+
+This will:
+1. Build the app for production
+2. Deploy to GitHub Pages automatically
+3. Your site will be live at `https://varun-maraka.github.io/`
+
+### Manual Deploy
+
+1. Build the app:
+```bash
+npm run build
+```
+
+2. Push build folder to GitHub:
+```bash
+git add build
+git commit -m "Deploy build"
+git push origin main
+```
+
+3. Configure GitHub Pages:
+   - Go to Settings → Pages
+   - Set source to `gh-pages` branch
+
+## Pages Overview
+
+### Home Page
+- Welcome message
+- Sample buttons with different colors
+- Call-to-action content
+
+### About Page
+- Information about the application
+- List of features
+- Company mission
+
+### Services Page
+- Grid of service cards
+- 4 different services with descriptions
+- Hover effects
+
+### Contact Page
+- Contact form with validation
+- Name, email, and message fields
+- Form submission handling
+
+## Menu Items
+
+The navigation bar contains 4 menu items:
+1. **Home** - Welcome page with introduction
+2. **About** - Information about the project
+3. **Services** - Services offered
+4. **Contact** - Contact form
+
+## Styling Features
+
+- **Color-coded buttons:**
+  - Primary (Blue) - `.btn-primary`
+  - Success (Green) - `.btn-success`
+  - Danger (Red) - `.btn-danger`
+  - Warning (Orange) - `.btn-warning`
+
+- **Responsive design** - Mobile and desktop optimized
+- **Smooth animations** - Page transitions and hover effects
+- **Hamburger menu** - Mobile navigation
+
+## Browser Support
+
+- Chrome (latest)
+- Firefox (latest)
+- Safari (latest)
+- Edge (latest)
+
+## Available Scripts
+
+```bash
+# Start development server
+npm start
+
+# Build for production
+npm build
+
+# Deploy to GitHub Pages
+npm run deploy
+```
+
+## Troubleshooting
+
+### Port 3000 already in use
+React will automatically prompt to use a different port.
+
+### Blank page on GitHub Pages
+- Ensure `"homepage"` in package.json matches your GitHub Pages URL
+- Clear browser cache and rebuild
+
+### Routing not working
+- Make sure React Router is properly configured
+- Check that all imports are correct
+
+### Build errors
+Clear cache and reinstall:
+```bash
+npm cache clean --force
+rm -rf node_modules
+npm install
+```
+
+## What to Do Next
+
+1. **Test locally:**
+```bash
+npm start
+```
+
+2. **Build:**
+```bash
+npm build
+```
+
+3. **Deploy:**
+```bash
+npm run deploy
+```
+
+Your site will be live at: `https://varun-maraka.github.io/`
+
+## License
+
+ISC
+
+## Author
+
+Varun Maraka
+
+---
+
+**Last Updated:** February 16, 2026
