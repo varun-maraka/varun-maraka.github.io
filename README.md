@@ -119,6 +119,9 @@ I was deploying to gh-newMenu, but the code was getting built from gh-pages.
 Later I understood that code can be built and deployed without commit using above commands.
 
 Now I changed package.json deploy script to push to gh-newMenu branch, we can change it to what ever branch we want to push.
+
+* If auto deployment does not work do a manual deployment using command line.
+* Currently behaviour is overrideing the the pages branch that was set in Settings of GitHub.
 ## Pages Overview
 
 ### Home Page
