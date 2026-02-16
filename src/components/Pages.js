@@ -1,5 +1,7 @@
 import React from 'react';
 import './Pages.css';
+import Board from '../containers/Board';
+import AllowDuplicates from '../containers/checkbox';
 
 export const Home = () => (
     <section className="page home-section">
@@ -22,23 +24,11 @@ export const About = () => (
     </section>
 );
 
-export const Services = () => (
-    <section className="page services-section">
-        <h2>Our Services</h2>
-        <div className="services-grid">
-            <div className="service-card">
-                <h3>Web Development</h3>
-                <p>Building responsive and scalable web applications</p>
-            </div>
-            <div className="service-card">
-                <h3>UI/UX Design</h3>
-                <p>Creating beautiful and intuitive user interfaces</p>
-            </div>
-            <div className="service-card">
-                <h3>Consulting</h3>
-                <p>Expert advice on technology and architecture</p>
-            </div>
-        </div>
+export const NotesApp = () => (
+    <section className="page notesapp-section">
+        <h2>Our Notes App</h2>
+        <AllowDuplicates/>
+        <Board/>
     </section>
 );
 

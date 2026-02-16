@@ -1,7 +1,7 @@
 import React from 'react';
 import { useSelector } from 'react-redux';
 import Menu from './components/Menu';
-import { Home, About, Services, Contact } from './components/Pages';
+import { Home, About, NotesApp, Contact } from './components/Pages';
 import './App.css';
 
 function App() {
@@ -13,8 +13,8 @@ function App() {
                 return <Home />;
             case 'about':
                 return <About />;
-            case 'services':
-                return <Services />;
+            case 'notesapp':
+                return <NotesApp />;
             case 'contact':
                 return <Contact />;
             default:

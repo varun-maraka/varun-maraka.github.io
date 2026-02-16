@@ -48,10 +48,10 @@ const Menu = () => {
                     </li>
                     <li className="menu-item">
                         <a 
-                            onClick={() => handleMenuItemClick('services')}
-                            className={`menu-link ${activePage === 'services' ? 'active' : ''}`}
+                            onClick={() => handleMenuItemClick('notesapp')}
+                            className={`menu-link ${activePage === 'notesapp' ? 'active' : ''}`}
                         >
-                            Services
+                            Notes App
                         </a>
                     </li>
                     <li className="menu-item">
