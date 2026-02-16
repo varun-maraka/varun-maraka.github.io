@@ -3,20 +3,21 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Application</title>
+    <title>Varun Maraka | React Redux Menu App</title>
+    <meta name="description" content="Responsive menu app with Home, About, Notes, and Contact sections.">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
     <nav class="navbar">
         <div class="navbar-container">
-            <div class="navbar-brand">My App</div>
-            <button class="hamburger-menu" id="hamburger">
+            <a class="navbar-brand" href="#home">My App</a>
+            <button class="hamburger-menu" id="hamburger" aria-label="Toggle navigation menu" aria-expanded="false" aria-controls="menuList">
                 <span></span>
                 <span></span>
                 <span></span>
             </button>
             <ul class="menu-list" id="menuList">
-                <li class="menu-item"><a href="#home" class="menu-link">Home</a></li>
+                <li class="menu-item"><a href="#home" class="menu-link active">Home</a></li>
                 <li class="menu-item"><a href="#about" class="menu-link">About</a></li>
                 <li class="menu-item"><a href="#notesapp" class="menu-link">Notes App</a></li>
                 <li class="menu-item"><a href="#contact" class="menu-link">Contact</a></li>
@@ -25,33 +26,56 @@
     </nav>
 
     <main class="content">
-        <section id="home">
+        <section id="home" class="page">
             <h1>Welcome to My Application</h1>
-            <p>This is a fresh new webpage with a functional hamburger menu.</p>
-            <button class="btn btn-primary">Primary Button</button>
-            <button class="btn btn-success">Success Button</button>
-            <button class="btn btn-danger">Delete Button</button>
-            <button class="btn btn-warning">Warning Button</button>
+            <p>A responsive demo with a clean navigation experience for both desktop and mobile views.</p>
+            <div class="button-group">
+                <button class="btn btn-primary" type="button">Primary Button</button>
+                <button class="btn btn-success" type="button">Success Button</button>
+                <button class="btn btn-danger" type="button">Delete Button</button>
+                <button class="btn btn-warning" type="button">Warning Button</button>
+            </div>
         </section>
 
-        <section id="about">
-            <h2>About Section</h2>
-            <p>Click the hamburger menu on mobile to navigate between sections.</p>
+        <section id="about" class="page">
+            <h2>About</h2>
+            <p>This project was built using React + Redux and adapted here as a static deployment for GitHub Pages.</p>
+            <p>The navigation bar supports a hamburger menu on small screens for a better mobile experience.</p>
         </section>
 
-        <section id="notesapp">
+        <section id="notesapp" class="page">
             <h2>Notes App</h2>
-            <p>Our Notes App helps you organize your thoughts and ideas.</p>
+            <p>Keep your ideas organized with a fast and simple note-taking workflow.</p>
+            <div class="services-grid">
+                <article class="service-card">
+                    <h3>Quick Notes</h3>
+                    <p>Capture thoughts instantly and stay productive.</p>
+                </article>
+                <article class="service-card">
+                    <h3>Smart Organization</h3>
+                    <p>Use categories and clean layouts to find notes quickly.</p>
+                </article>
+                <article class="service-card">
+                    <h3>Anywhere Access</h3>
+                    <p>Review and manage your notes from any modern browser.</p>
+                </article>
+            </div>
         </section>
 
-        <section id="contact">
+        <section id="contact" class="page">
             <h2>Contact</h2>
-            <p>Get in touch with us today!</p>
+            <p>Send a message and we’ll get back to you soon.</p>
+            <form class="contact-form" action="#" method="post">
+                <input type="text" placeholder="Your Name" required>
+                <input type="email" placeholder="Email Address" required>
+                <textarea rows="5" placeholder="Message" required></textarea>
+                <button class="btn btn-primary" type="submit">Send Message</button>
+            </form>
         </section>
     </main>
 
     <footer class="footer">
-        <p>&copy; 2026 My Application. All rights reserved.</p>
+        <p>&copy; 2026 React Redux App. All rights reserved.</p>
     </footer>
 
     <script src="script.js"></script>
