@@ -1,70 +1,48 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
-import './Navigation.css';
+import React from 'react';
+import '../components/Navigation.css';
 
-const Navigation = () => {
-    const [isMenuOpen, setIsMenuOpen] = useState(false);
-
-    const handleMenuItemClick = () => {
-        setIsMenuOpen(false);
-    };
-
-    return (
-        <nav className="navbar">
-            <div className="navbar-container">
-                <Link to="/" className="navbar-brand">
-                    My App
-                </Link>
-                <button 
-                    className={`hamburger-menu ${isMenuOpen ? 'active' : ''}`}
-                    onClick={() => setIsMenuOpen(!isMenuOpen)}
-                    aria-label="Toggle menu"
-                >
-                    <span></span>
-                    <span></span>
-                    <span></span>
-                </button>
-                <ul className={`menu-list ${isMenuOpen ? 'active' : ''}`}>
-                    <li className="menu-item">
-                        <Link 
-                            to="/" 
-                            className="menu-link"
-                            onClick={handleMenuItemClick}
-                        >
-                            Home
-                        </Link>
-                    </li>
-                    <li className="menu-item">
-                        <Link 
-                            to="/about" 
-                            className="menu-link"
-                            onClick={handleMenuItemClick}
-                        >
-                            About
-                        </Link>
-                    </li>
-                    <li className="menu-item">
-                        <Link 
-                            to="/services" 
-                            className="menu-link"
-                            onClick={handleMenuItemClick}
-                        >
-                            Services
-                        </Link>
-                    </li>
-                    <li className="menu-item">
-                        <Link 
-                            to="/contact" 
-                            className="menu-link"
-                            onClick={handleMenuItemClick}
-                        >
-                            Contact
-                        </Link>
-                    </li>
-                </ul>
-            </div>
-        </nav>
-    );
-};
+function Navigation({ currentPage, onMenuClick }) {
+  return (
+    <nav className="navbar">
+      <div className="nav-container">
+        <h1 className="nav-logo">MyApp</h1>
+        <ul className="nav-menu">
+          <li className="nav-item">
+            <button
+              className={`nav-link ${currentPage === 'home' ? 'active' : ''}`}
+              onClick={() => onMenuClick('home')}
+            >
+              Home
+            </button>
+          </li>
+          <li className="nav-item">
+            <button
+              className={`nav-link ${currentPage === 'about' ? 'active' : ''}`}
+              onClick={() => onMenuClick('about')}
+            >
+              About
+            </button>
+          </li>
+          <li className="nav-item">
+            <button
+              className={`nav-link ${currentPage === 'services' ? 'active' : ''}`}
+              onClick={() => onMenuClick('services')}
+            >
+              Services
+            </button>
+          </li>
+          <li className="nav-item">
+            <button
+              className={`nav-link ${currentPage === 'contact' ? 'active' : ''}`}
+              onClick={() => onMenuClick('contact')}
+            >
+              Contact
+            </button>
+          </li>
+        </ul>
+      </div>
+    </nav>
+  );
+}
 
 export default Navigation;
