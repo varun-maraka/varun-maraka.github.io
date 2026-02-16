@@ -1,32 +1,58 @@
-import React from 'react';
-import { useSelector } from 'react-redux';
+import React, { useEffect, useMemo, useState } from 'react';
 import Menu from './components/Menu';
 import { Home, About, NotesApp, Contact } from './components/Pages';
 import './App.css';
 
-function App() {
-    const activePage = useSelector(state => state.activePage);
+const getCurrentPath = () => {
+    const hash = window.location.hash || '#/';
+    const normalizedHash = hash.startsWith('#') ? hash.slice(1) : hash;
 
-    const renderPage = () => {
-        switch (activePage) {
-            case 'home':
+    if (normalizedHash === '' || normalizedHash === '/') {
+        return '/';
+    }
+
+    return normalizedHash;
+};
+
+function App() {
+    const [currentPath, setCurrentPath] = useState(getCurrentPath());
+
+    useEffect(() => {
+        if (!window.location.hash) {
+            window.location.hash = '#/';
+        }
+
+        const handleHashChange = () => {
+            setCurrentPath(getCurrentPath());
+        };
+
+        window.addEventListener('hashchange', handleHashChange);
+
+        return () => {
+            window.removeEventListener('hashchange', handleHashChange);
+        };
+    }, []);
+
+    const page = useMemo(() => {
+        switch (currentPath) {
+            case '/':
                 return <Home />;
-            case 'about':
+            case '/about':
                 return <About />;
-            case 'notesapp':
+            case '/notes-app':
                 return <NotesApp />;
-            case 'contact':
+            case '/contact':
                 return <Contact />;
             default:
                 return <Home />;
         }
-    };
+    }, [currentPath]);
 
     return (
         <div className="app">
-            <Menu />
+            <Menu currentPath={currentPath} />
             <main className="content">
-                {renderPage()}
+                {page}
             </main>
             <footer className="footer">
                 <p>&copy; 2026 React Redux App. All rights reserved.</p>
