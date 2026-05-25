@@ -33,6 +33,14 @@ function Navigation({ currentPage, onMenuClick }) {
           </li>
           <li className="nav-item">
             <button
+              className={`nav-link ${currentPage === 'breathing-techniques' ? 'active' : ''}`}
+              onClick={() => onMenuClick('breathing-techniques')}
+            >
+              Breathing Techniques
+            </button>
+          </li>
+          <li className="nav-item">
+            <button
               className={`nav-link ${currentPage === 'contact' ? 'active' : ''}`}
               onClick={() => onMenuClick('contact')}
             >
