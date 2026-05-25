@@ -4,6 +4,7 @@ import Home from './pages/Home';
 import About from './pages/About';
 import Services from './pages/Services';
 import Contact from './pages/Contact';
+import BreathingTechniques from './pages/BreathingTechniques';
 import './App.css';
 
 function App() {
@@ -27,6 +28,8 @@ function App() {
         return <Services />;
       case 'contact':
         return <Contact />;
+      case 'breathing-techniques':
+        return <BreathingTechniques />;
       case 'home':
       default:
         return <Home />;

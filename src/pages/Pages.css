@@ -160,3 +160,55 @@
     max-width: 100%;
   }
 }
+
+
+.breathing-page {
+  max-width: 760px;
+}
+
+.breathing-controls {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 16px 0;
+}
+
+.breathing-controls select {
+  padding: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 1rem;
+}
+
+.breathing-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.breathing-live {
+  text-align: center;
+  margin-top: 24px;
+}
+
+.breathing-counter {
+  font-size: 4rem;
+  font-weight: 700;
+  color: #2c3e50;
+}
+
+.breathing-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+.btn-secondary {
+  background-color: #7f8c8d;
+}
+
+.btn-secondary:hover {
+  background-color: #636e72;
+}
