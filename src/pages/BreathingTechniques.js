@@ -17,10 +17,12 @@ const TECHNIQUES = [
 function BreathingTechniques() {
   const [selectedId, setSelectedId] = useState(null);
   const [isRunning, setIsRunning] = useState(false);
+  const [isCycleBreak, setIsCycleBreak] = useState(false);
   const [phaseIndex, setPhaseIndex] = useState(0);
   const [secondCount, setSecondCount] = useState(1);
   const [cycleCount, setCycleCount] = useState(0);
   const intervalRef = useRef(null);
+  const cycleBreakRef = useRef(null);
 
   const selectedTechnique = useMemo(
     () => TECHNIQUES.find((t) => t.id === selectedId),
@@ -30,7 +32,7 @@ function BreathingTechniques() {
   const currentPhase = selectedTechnique ? selectedTechnique.phases[phaseIndex] : null;
 
   useEffect(() => {
-    if (!isRunning || !currentPhase) return undefined;
+    if (!isRunning || !currentPhase || isCycleBreak) return undefined;
 
     intervalRef.current = setInterval(() => {
       setSecondCount((prev) => {
@@ -40,8 +42,15 @@ function BreathingTechniques() {
         setPhaseIndex((prevPhase) => {
           const nextPhase = prevPhase + 1;
           if (nextPhase >= selectedTechnique.phases.length) {
+            // End of cycle — pause 0.5s before restarting
             setCycleCount((c) => c + 1);
-            return 0;
+            setIsCycleBreak(true);
+            clearInterval(intervalRef.current);
+            cycleBreakRef.current = setTimeout(() => {
+              setPhaseIndex(0);
+              setIsCycleBreak(false);
+            }, 500);
+            return prevPhase; // hold current index during break
           }
           return nextPhase;
         });
@@ -50,12 +59,19 @@ function BreathingTechniques() {
     }, 1000);
 
     return () => clearInterval(intervalRef.current);
-  }, [isRunning, currentPhase, selectedTechnique]);
+  }, [isRunning, currentPhase, isCycleBreak, selectedTechnique]);
+
+  // Clean up cycle break timer on unmount or reset
+  useEffect(() => {
+    return () => clearTimeout(cycleBreakRef.current);
+  }, []);
 
   const handleSelectTechnique = (id) => {
     clearInterval(intervalRef.current);
+    clearTimeout(cycleBreakRef.current);
     setSelectedId(id);
     setIsRunning(true);
+    setIsCycleBreak(false);
     setPhaseIndex(0);
     setSecondCount(1);
     setCycleCount(0);
@@ -64,7 +80,10 @@ function BreathingTechniques() {
   const handleStartPause = () => setIsRunning((prev) => !prev);
 
   const handleReset = () => {
+    clearInterval(intervalRef.current);
+    clearTimeout(cycleBreakRef.current);
     setIsRunning(false);
+    setIsCycleBreak(false);
     setPhaseIndex(0);
     setSecondCount(1);
     setCycleCount(0);
@@ -72,8 +91,10 @@ function BreathingTechniques() {
 
   const handleBack = () => {
     clearInterval(intervalRef.current);
+    clearTimeout(cycleBreakRef.current);
     setSelectedId(null);
     setIsRunning(false);
+    setIsCycleBreak(false);
     setPhaseIndex(0);
     setSecondCount(1);
     setCycleCount(0);

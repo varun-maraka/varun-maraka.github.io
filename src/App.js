@@ -44,7 +44,9 @@ function App() {
       </main>
       <footer className="footer">
         <p>&copy; 2026 React Menu App. All rights reserved.</p>
-        <p className="footer-credit">Developed by Varun Maraka, under the guidance of Anokha V, MS in Psychology</p>
+        {currentPage === 'breathing-techniques' && (
+          <p className="footer-credit">Developed by Varun Maraka, under the guidance of Anokha V, MS in Psychology</p>
+        )}
       </footer>
     </div>
   );
