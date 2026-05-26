@@ -162,47 +162,207 @@
 }
 
 
+/* ── Breathing Page ── */
 .breathing-page {
-  max-width: 760px;
+  max-width: 900px;
 }
 
-.breathing-controls {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin: 16px 0;
+.breathing-header-bg {
+  width: 100%;
+  height: 160px;
+  background-size: 100% 100%;
+  background-position: center center;
+  background-repeat: no-repeat;
+  border-radius: 10px;
+  margin-bottom: 20px;
 }
 
-.breathing-controls select {
-  padding: 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-size: 1rem;
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
 }
 
-.breathing-summary {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  font-weight: 600;
-}
-
-.breathing-live {
-  text-align: center;
+/* Technique card grid */
+.technique-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 16px;
   margin-top: 24px;
 }
 
+.technique-card {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.10);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.technique-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+}
+
+.technique-card-img {
+  width: 100%;
+  height: auto;
+  display: block;
+  border-radius: 14px;
+}
+
+/* Timer two-column layout */
+.timer-layout {
+  display: flex;
+  gap: 32px;
+  align-items: flex-start;
+  margin-top: 8px;
+}
+
+.timer-technique-img-wrap {
+  flex: 0 0 auto;
+  width: 340px;
+}
+
+.timer-technique-img {
+  width: 100%;
+  height: auto;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+}
+
+.timer-controls-wrap {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+@media (max-width: 680px) {
+  .timer-layout {
+    flex-direction: column;
+    align-items: center;
+  }
+  .timer-technique-img-wrap {
+    width: 100%;
+    max-width: 340px;
+  }
+}
+
+/* Timer view */
+.btn-back {
+  background: none;
+  color: #3498db;
+  border: 1px solid #3498db;
+  padding: 8px 16px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+  cursor: pointer;
+  margin-bottom: 16px;
+  transition: background 0.2s;
+}
+
+.btn-back:hover {
+  background: #ebf5fb;
+}
+
+.breathing-phase-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 16px 0 20px;
+  justify-content: center;
+}
+
+.phase-pill {
+  padding: 6px 14px;
+  border-radius: 20px;
+  background: #f0f0f0;
+  color: #555;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: background 0.3s, color 0.3s;
+}
+
+.phase-pill.phase-active {
+  background: #4A90D9;
+  color: white;
+}
+
+/* Phase image + counter */
+.breathing-img-wrap {
+  position: relative;
+  width: 100%;
+  max-width: 300px;
+  margin: 0 auto 20px;
+  text-align: center;
+}
+
+.breathing-phase-img {
+  width: 280px;
+  height: auto;
+  border-radius: 16px;
+  display: block;
+  animation: phaseFade 0.4s ease;
+}
+
+@keyframes phaseFade {
+  from { opacity: 0; transform: scale(0.96); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.breathing-counter-overlay {
+  margin-top: 10px;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
+}
+
 .breathing-counter {
-  font-size: 4rem;
+  font-size: 3.2rem;
   font-weight: 700;
   color: #2c3e50;
+  line-height: 1;
+}
+
+.breathing-of {
+  font-size: 1rem;
+  color: #888;
+}
+
+/* Progress bar under the image */
+.breathing-progress-bar {
+  height: 8px;
+  background: #e0e0e0;
+  border-radius: 4px;
+  overflow: hidden;
+  margin-top: 10px;
+}
+
+.breathing-progress-fill {
+  height: 100%;
+  background: #4A90D9;
+  border-radius: 4px;
+}
+
+.cycle-count {
+  text-align: center;
+  color: #555;
+  margin-bottom: 8px;
 }
 
 .breathing-actions {
   display: flex;
   gap: 12px;
   justify-content: center;
-  margin-top: 20px;
+  margin-top: 16px;
 }
 
 .btn-secondary {
@@ -211,4 +371,11 @@
 
 .btn-secondary:hover {
   background-color: #636e72;
+}
+
+@media (max-width: 600px) {
+  .technique-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
 }
