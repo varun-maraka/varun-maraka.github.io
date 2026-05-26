@@ -36,6 +36,14 @@
     margin: 0;
 }
 
+.footer-credit {
+    margin-top: 6px !important;
+    font-size: 0.82rem;
+    color: #a0aab4;
+    font-style: italic;
+    letter-spacing: 0.01em;
+}
+
 @media (max-width: 768px) {
     .main-content {
         padding: 20px 15px;

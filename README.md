@@ -102,7 +102,10 @@ This will:
 npm run build
 ```
 
-2. Push build folder to GitHub:
+2. Push build folder to GitHub: 
+    Code can be pushed to any branch.
+    But Build folder and index.html and other folder should be pushed to gh-pages branch  or any branch that is linked to git hub pages.
+    If we do Auto Deploy using command it will created a commit in that branch.
 ```bash
 git add build
 git commit -m "Deploy build"
@@ -110,7 +113,7 @@ git push origin main
 ```
 
 3. Configure GitHub Pages:
-   - Go to Settings → Pages
+   - Go to Settings of the Repository → Pages
    - Set source to `gh-pages` branch
 
 ### Deploy issue
