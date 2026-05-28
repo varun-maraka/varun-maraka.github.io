@@ -137,6 +137,15 @@ When you run npm run deploy, it:
 Builds the React app → creates build folder
 Takes contents of build folder → pushes to gh-pages branch
 GitHub Pages reads from gh-pages branch and serves it to https://varun-maraka.github.io/
+
+### Deploy questions
+Q: From where the website is rendered, from index.html in main folder or index.html in build folder?
+Ans:  It is rendered from the build folder, but it will be deployed to gh-pages branch after command is executed.
+  So from build folder it goes to gh-pages branch where there is not build folder, it sits there directly on main folder.
+
+Q2: There is a index.html in main folder of this branch what is the use of it?
+Ans: It is created earlier and it will not be used in rendering the website.
+    After react components are build  all the react code goes into index.html, after deployment this index.html goes to gh-pages branch main folder.
 ## Pages Overview
 
 ### Home Page
