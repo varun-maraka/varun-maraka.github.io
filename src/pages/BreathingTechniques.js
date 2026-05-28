@@ -14,15 +14,33 @@ const TECHNIQUES = [
   { id: '2-4',     name: '2-4 Breathing',           phases: [{ label: 'Inhale', seconds: 2 }, { label: 'Exhale', seconds: 4 }] },
 ];
 
+// Preload audio files
+const PHASE_AUDIO = {
+  Inhale: new Audio(`${process.env.PUBLIC_URL}/techniques/inhale.mp3`),
+  Hold:   new Audio(`${process.env.PUBLIC_URL}/techniques/hold.mp3`),
+  Exhale: new Audio(`${process.env.PUBLIC_URL}/techniques/exhale.mp3`),
+};
+
 function BreathingTechniques() {
-  const [selectedId, setSelectedId] = useState(null);
-  const [isRunning, setIsRunning] = useState(false);
+  const [selectedId, setSelectedId]     = useState(null);
+  const [isRunning, setIsRunning]       = useState(false);
   const [isCycleBreak, setIsCycleBreak] = useState(false);
-  const [phaseIndex, setPhaseIndex] = useState(0);
-  const [secondCount, setSecondCount] = useState(1);
-  const [cycleCount, setCycleCount] = useState(0);
-  const intervalRef = useRef(null);
+  const [phaseIndex, setPhaseIndex]     = useState(0);
+  const [secondCount, setSecondCount]   = useState(1);
+  const [cycleCount, setCycleCount]     = useState(0);
+  const [soundEnabled, setSoundEnabled] = useState(false);
+  const [showConfirm, setShowConfirm]   = useState(false);
+  const [rememberChoice, setRememberChoice] = useState(false);
+
+  const intervalRef   = useRef(null);
   const cycleBreakRef = useRef(null);
+  const prevPhaseRef  = useRef(null);
+
+  // Load saved sound preference on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('breathingSoundEnabled');
+    if (saved === 'true') setSoundEnabled(true);
+  }, []);
 
   const selectedTechnique = useMemo(
     () => TECHNIQUES.find((t) => t.id === selectedId),
@@ -31,6 +49,25 @@ function BreathingTechniques() {
 
   const currentPhase = selectedTechnique ? selectedTechnique.phases[phaseIndex] : null;
 
+  // ── Play MP3 for current phase ────────────────────────────────────────────
+  const playPhaseAudio = (phaseLabel) => {
+    const audio = PHASE_AUDIO[phaseLabel];
+    if (!audio) return;
+    audio.currentTime = 0;
+    audio.play().catch(() => {}); // silently ignore autoplay errors
+  };
+
+  // ── Trigger audio on phase change ─────────────────────────────────────────
+  useEffect(() => {
+    if (!soundEnabled || !isRunning || !currentPhase) return;
+    if (prevPhaseRef.current === phaseIndex && prevPhaseRef.selectedId === selectedId) return;
+    prevPhaseRef.current = phaseIndex;
+    prevPhaseRef.selectedId = selectedId;
+    playPhaseAudio(currentPhase.label);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [phaseIndex, selectedId, isRunning, soundEnabled]);
+
+  // ── Timer tick ────────────────────────────────────────────────────────────
   useEffect(() => {
     if (!isRunning || !currentPhase || isCycleBreak) return undefined;
 
@@ -42,7 +79,6 @@ function BreathingTechniques() {
         setPhaseIndex((prevPhase) => {
           const nextPhase = prevPhase + 1;
           if (nextPhase >= selectedTechnique.phases.length) {
-            // End of cycle — pause 0.5s before restarting
             setCycleCount((c) => c + 1);
             setIsCycleBreak(true);
             clearInterval(intervalRef.current);
@@ -50,7 +86,7 @@ function BreathingTechniques() {
               setPhaseIndex(0);
               setIsCycleBreak(false);
             }, 500);
-            return prevPhase; // hold current index during break
+            return prevPhase;
           }
           return nextPhase;
         });
@@ -61,14 +97,15 @@ function BreathingTechniques() {
     return () => clearInterval(intervalRef.current);
   }, [isRunning, currentPhase, isCycleBreak, selectedTechnique]);
 
-  // Clean up cycle break timer on unmount or reset
   useEffect(() => {
     return () => clearTimeout(cycleBreakRef.current);
   }, []);
 
+  // ── Handlers ──────────────────────────────────────────────────────────────
   const handleSelectTechnique = (id) => {
     clearInterval(intervalRef.current);
     clearTimeout(cycleBreakRef.current);
+    prevPhaseRef.current = null;
     setSelectedId(id);
     setIsRunning(true);
     setIsCycleBreak(false);
@@ -82,6 +119,7 @@ function BreathingTechniques() {
   const handleReset = () => {
     clearInterval(intervalRef.current);
     clearTimeout(cycleBreakRef.current);
+    prevPhaseRef.current = null;
     setIsRunning(false);
     setIsCycleBreak(false);
     setPhaseIndex(0);
@@ -92,12 +130,36 @@ function BreathingTechniques() {
   const handleBack = () => {
     clearInterval(intervalRef.current);
     clearTimeout(cycleBreakRef.current);
+    prevPhaseRef.current = null;
     setSelectedId(null);
     setIsRunning(false);
     setIsCycleBreak(false);
     setPhaseIndex(0);
     setSecondCount(1);
     setCycleCount(0);
+    // Reset sound if user didn't save their preference
+    if (!localStorage.getItem('breathingSoundEnabled')) setSoundEnabled(false);
+  };
+
+  const handleVolumeClick = () => {
+    if (soundEnabled) {
+      setSoundEnabled(false);
+      localStorage.removeItem('breathingSoundEnabled');
+    } else {
+      setRememberChoice(false);
+      setShowConfirm(true);
+    }
+  };
+
+  const handleConfirmSound = () => {
+    setSoundEnabled(true);
+    if (rememberChoice) localStorage.setItem('breathingSoundEnabled', 'true');
+    setShowConfirm(false);
+  };
+
+  const handleCancelSound = () => {
+    setRememberChoice(false);
+    setShowConfirm(false);
   };
 
   // Map phase label → image filename
@@ -107,19 +169,65 @@ function BreathingTechniques() {
     Hold:   'hold',
   };
 
-  // ── Timer view ───────────────────────────────────────────────────────────────
+  // ── Confirmation modal ────────────────────────────────────────────────────
+  const ConfirmModal = () => (
+    <div className="sound-modal-overlay">
+      <div className="sound-modal">
+        <p>Turn on voice guidance for each breathing phase?</p>
+        <label className="sound-modal-remember">
+          <input
+            type="checkbox"
+            checked={rememberChoice}
+            onChange={(e) => setRememberChoice(e.target.checked)}
+          />
+          Remember my choice
+        </label>
+        <div className="sound-modal-actions">
+          <button className="btn" onClick={handleConfirmSound}>Yes, turn on</button>
+          <button className="btn btn-secondary" onClick={handleCancelSound}>Cancel</button>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ── Volume icon ───────────────────────────────────────────────────────────
+  const VolumeIcon = () => (
+    <button
+      className="btn btn-icon volume-btn"
+      onClick={handleVolumeClick}
+      aria-label={soundEnabled ? 'Mute' : 'Unmute'}
+      title={soundEnabled ? 'Voice on — click to mute' : 'Voice off — click to enable'}
+    >
+      {soundEnabled ? (
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#3498db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="#3498db" stroke="none"/>
+          <path d="M15.54 8.46a5 5 0 0 1 0 7.07"/>
+          <path d="M19.07 4.93a10 10 0 0 1 0 14.14"/>
+        </svg>
+      ) : (
+        <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#aaa" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5" fill="#aaa" stroke="none"/>
+          <line x1="23" y1="9" x2="17" y2="15"/>
+          <line x1="17" y1="9" x2="23" y2="15"/>
+        </svg>
+      )}
+    </button>
+  );
+
+  // ── Timer view ────────────────────────────────────────────────────────────
   if (selectedTechnique) {
-    const phaseKey   = currentPhase ? currentPhase.label : 'Hold';
-    const phaseImg   = phaseImageMap[phaseKey] || 'hold';
-    const progress   = currentPhase ? (secondCount / currentPhase.seconds) * 100 : 0;
+    const phaseKey = currentPhase ? currentPhase.label : 'Hold';
+    const phaseImg = phaseImageMap[phaseKey] || 'hold';
+    const progress = currentPhase ? (secondCount / currentPhase.seconds) * 100 : 0;
 
     return (
       <div className="page breathing-page">
+        {showConfirm && <ConfirmModal />}
+
         <button className="btn btn-back" onClick={handleBack}>← Back</button>
 
         <div className="timer-layout">
 
-          {/* Left — technique card image */}
           <div className="timer-technique-img-wrap">
             <img
               src={`${process.env.PUBLIC_URL}/techniques/technique_${selectedTechnique.id}.png`}
@@ -128,10 +236,8 @@ function BreathingTechniques() {
             />
           </div>
 
-          {/* Right — phase animation + controls */}
           <div className="timer-controls-wrap">
 
-            {/* Phase pills */}
             <div className="breathing-phase-strip">
               {selectedTechnique.phases.map((p, i) => (
                 <span key={i} className={`phase-pill ${i === phaseIndex ? 'phase-active' : ''}`}>
@@ -140,7 +246,6 @@ function BreathingTechniques() {
               ))}
             </div>
 
-            {/* Phase face image */}
             <div className="breathing-img-wrap">
               <img
                 key={phaseImg}
@@ -176,6 +281,7 @@ function BreathingTechniques() {
                 )}
               </button>
               <button className="btn btn-secondary btn-sm" onClick={handleReset}>Reset</button>
+              <VolumeIcon />
             </div>
 
           </div>
@@ -184,13 +290,14 @@ function BreathingTechniques() {
     );
   }
 
-  // ── Card grid view ───────────────────────────────────────────────────────────
+  // ── Card grid view ────────────────────────────────────────────────────────
   return (
     <div className="page breathing-page">
+      {showConfirm && <ConfirmModal />}
       <div
-          className="breathing-header-bg"
-          style={{ backgroundImage: `url(${process.env.PUBLIC_URL}/header-bg.png)` }}
-        />
+        className="breathing-header-bg"
+        style={{ backgroundImage: `url(${process.env.PUBLIC_URL}/header-bg.png)` }}
+      />
       <p>Tap a technique to start the guided timer.</p>
 
       <div className="technique-grid">

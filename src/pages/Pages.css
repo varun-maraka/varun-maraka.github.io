@@ -402,6 +402,66 @@
   background-color: #636e72;
 }
 
+/* ── Volume button ─────────────────────────────────────────────────────────── */
+.volume-btn {
+  opacity: 0.7;
+}
+
+.volume-btn:hover {
+  opacity: 1;
+  transform: scale(1.1);
+}
+
+/* ── Sound confirmation modal ─────────────────────────────────────────────── */
+.sound-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.sound-modal {
+  background: #fff;
+  border-radius: 12px;
+  padding: 32px 28px 24px;
+  max-width: 320px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.18);
+}
+
+.sound-modal p {
+  font-size: 1.05rem;
+  color: #333;
+  margin-bottom: 24px;
+}
+
+.sound-modal-remember {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  justify-content: center;
+  font-size: 0.9rem;
+  color: #555;
+  margin-bottom: 20px;
+  cursor: pointer;
+}
+
+.sound-modal-remember input {
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.sound-modal-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+}
+
 @media (max-width: 600px) {
   .technique-grid {
     grid-template-columns: 1fr 1fr;
