@@ -5,8 +5,10 @@ import About from './pages/About';
 import Contact from './pages/Contact';
 import BreathingTechniques from './pages/BreathingTechniques';
 import './App.css';
+import useVisitorTracking from './hooks/useVisitorTracking';
 
 function App() {
+  useVisitorTracking();
   const [currentPage, setCurrentPage] = useState('home');
 
   useEffect(() => {

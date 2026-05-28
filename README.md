@@ -239,6 +239,46 @@ npm run deploy
 
 Your site will be live at: `https://varun-maraka.github.io/`
 
+## Visitor Tracking
+
+The app tracks visitor activity and logs it to a Google Sheet via a Google Apps Script Web App.
+
+### How it works
+
+The custom hook `src/hooks/useVisitorTracking.js` fires once on app load. It:
+
+1. Generates a persistent **device ID** stored in `localStorage` (`_did`) to identify the device across sessions
+2. Checks if a tracking call was already made **today** (`localStorage` key `_tdate`) — skips if yes
+3. Fetches the visitor's **IP address** via ipify.org
+4. Fetches **geo details** (country, city) via ipapi.co
+5. Parses **browser, OS, and device type** from `navigator.userAgent`
+6. POSTs the payload to the Google Apps Script endpoint
+
+### Google Sheet structure
+
+**Logs tab** — one row per unique device (first visit only):
+
+| Timestamp | IP | Country | City | Browser | OS | Device | Page URL | Device ID |
+
+**DeviceStats tab** — one row per device, updated on each new day:
+
+| Device ID | IP | Total Days | First Visit | Last Visit |
+
+### Rules enforced
+
+- **One entry per device** in the Logs tab (deduplicated by device ID)
+- **One API call per device per day** — enforced client-side via `localStorage`
+- **New entries appear at the top** of both sheets
+
+### Notes
+
+- A module-level flag `_trackingCalled` prevents React StrictMode's double-invocation in development from creating duplicate entries
+- The POST uses `mode: 'no-cors'` since Apps Script does not return CORS headers; data is still received and logged correctly
+- To update the Apps Script endpoint, change `APPS_SCRIPT_URL` in `src/hooks/useVisitorTracking.js`
+- When redeploying Apps Script changes, use **Manage deployments → Edit → New version** to keep the same URL
+
+---
+
 ## License
 
 ISC
