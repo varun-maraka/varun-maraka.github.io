@@ -163,10 +163,19 @@ function BreathingTechniques() {
             <p className="cycle-count">Completed cycles: <strong>{cycleCount}</strong></p>
 
             <div className="breathing-actions">
-              <button className="btn" onClick={handleStartPause}>
-                {isRunning ? 'Pause' : 'Resume'}
+              <button className="btn btn-icon" onClick={handleStartPause} aria-label={isRunning ? 'Pause' : 'Play'}>
+                {isRunning ? (
+                  <svg viewBox="0 0 24 24" width="64" height="64" fill="#3498db" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="5" y="4" width="4" height="16" rx="1" />
+                    <rect x="15" y="4" width="4" height="16" rx="1" />
+                  </svg>
+                ) : (
+                  <svg viewBox="0 0 24 24" width="64" height="64" fill="#3498db" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="6,3 21,12 6,21" />
+                  </svg>
+                )}
               </button>
-              <button className="btn btn-secondary" onClick={handleReset}>Reset</button>
+              <button className="btn btn-secondary btn-sm" onClick={handleReset}>Reset</button>
             </div>
 
           </div>
