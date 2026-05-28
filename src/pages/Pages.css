@@ -355,6 +355,13 @@
 .cycle-count {
   text-align: center;
   color: #555;
+  margin-bottom: 4px;
+}
+
+.cycle-recommendation {
+  text-align: center;
+  font-size: 0.82rem;
+  color: #888;
   margin-bottom: 8px;
 }
 

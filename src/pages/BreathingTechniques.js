@@ -2,16 +2,16 @@ import React, { useEffect, useMemo, useRef, useState } from 'react';
 import './Pages.css';
 
 const TECHNIQUES = [
-  { id: '4-7-8',   name: '4-7-8 Breathing',      phases: [{ label: 'Inhale', seconds: 4 }, { label: 'Hold', seconds: 7 }, { label: 'Exhale', seconds: 8 }] },
-  { id: '4-4-4-4', name: '4-4-4-4 (Box)',         phases: [{ label: 'Inhale', seconds: 4 }, { label: 'Hold', seconds: 4 }, { label: 'Exhale', seconds: 4 }, { label: 'Hold', seconds: 4 }] },
-  { id: '5-5',     name: '5-5 Breathing',          phases: [{ label: 'Inhale', seconds: 5 }, { label: 'Exhale', seconds: 5 }] },
-  { id: '5-5-5-5', name: '5-5-5-5 Breathing',     phases: [{ label: 'Inhale', seconds: 5 }, { label: 'Hold', seconds: 5 }, { label: 'Exhale', seconds: 5 }, { label: 'Hold', seconds: 5 }] },
-  { id: '6-3-6-3', name: '6-3-6-3 Breathing',     phases: [{ label: 'Inhale', seconds: 6 }, { label: 'Hold', seconds: 3 }, { label: 'Exhale', seconds: 6 }, { label: 'Hold', seconds: 3 }] },
-  { id: '6-6',     name: '6-6 Breathing',          phases: [{ label: 'Inhale', seconds: 6 }, { label: 'Exhale', seconds: 6 }] },
-  { id: '3-3-6',   name: '3-3-6 Breathing',        phases: [{ label: 'Inhale', seconds: 3 }, { label: 'Hold', seconds: 3 }, { label: 'Exhale', seconds: 6 }] },
-  { id: '4-6',     name: '4-6 Breathing',           phases: [{ label: 'Inhale', seconds: 4 }, { label: 'Exhale', seconds: 6 }] },
-  { id: '7-11',    name: '7-11 Breathing',          phases: [{ label: 'Inhale', seconds: 7 }, { label: 'Exhale', seconds: 11 }] },
-  { id: '2-4',     name: '2-4 Breathing',           phases: [{ label: 'Inhale', seconds: 2 }, { label: 'Exhale', seconds: 4 }] },
+  { id: '4-7-8',   name: '4-7-8 Breathing',      recommendation: '4 cycles initially, gradually increase to 8 cycles',        phases: [{ label: 'Inhale', seconds: 4 }, { label: 'Hold', seconds: 7 }, { label: 'Exhale', seconds: 8 }] },
+  { id: '4-4-4-4', name: '4-4-4-4 (Box)',         recommendation: '5–10 cycles (2–5 min)',                                      phases: [{ label: 'Inhale', seconds: 4 }, { label: 'Hold', seconds: 4 }, { label: 'Exhale', seconds: 4 }, { label: 'Hold', seconds: 4 }] },
+  { id: '5-5',     name: '5-5 Breathing',          recommendation: '10–20 cycles (2–5 min)',                                     phases: [{ label: 'Inhale', seconds: 5 }, { label: 'Exhale', seconds: 5 }] },
+  { id: '5-5-5-5', name: '5-5-5-5 Breathing',     recommendation: '5–10 cycles (2–5 min)',                                      phases: [{ label: 'Inhale', seconds: 5 }, { label: 'Hold', seconds: 5 }, { label: 'Exhale', seconds: 5 }, { label: 'Hold', seconds: 5 }] },
+  { id: '6-3-6-3', name: '6-3-6-3 Breathing',     recommendation: '5–10 cycles',                                                phases: [{ label: 'Inhale', seconds: 6 }, { label: 'Hold', seconds: 3 }, { label: 'Exhale', seconds: 6 }, { label: 'Hold', seconds: 3 }] },
+  { id: '6-6',     name: '6-6 Breathing',          recommendation: '10–15 cycles (2–5 min)',                                     phases: [{ label: 'Inhale', seconds: 6 }, { label: 'Exhale', seconds: 6 }] },
+  { id: '3-3-6',   name: '3-3-6 Breathing',        recommendation: '8–15 cycles',                                                phases: [{ label: 'Inhale', seconds: 3 }, { label: 'Hold', seconds: 3 }, { label: 'Exhale', seconds: 6 }] },
+  { id: '4-6',     name: '4-6 Breathing',           recommendation: '10–15 cycles',                                               phases: [{ label: 'Inhale', seconds: 4 }, { label: 'Exhale', seconds: 6 }] },
+  { id: '7-11',    name: '7-11 Breathing',          recommendation: 'Start with 5 cycles, build to 10 cycles',                   phases: [{ label: 'Inhale', seconds: 7 }, { label: 'Exhale', seconds: 11 }] },
+  { id: '2-4',     name: '2-4 Breathing',           recommendation: '10–20 cycles',                                               phases: [{ label: 'Inhale', seconds: 2 }, { label: 'Exhale', seconds: 4 }] },
 ];
 
 // Preload audio files
@@ -266,6 +266,7 @@ function BreathingTechniques() {
             </div>
 
             <p className="cycle-count">Completed cycles: <strong>{cycleCount}</strong></p>
+            <p className="cycle-recommendation"><strong>Recommended:</strong> {selectedTechnique.recommendation}</p>
 
             <div className="breathing-actions">
               <button className="btn btn-icon" onClick={handleStartPause} aria-label={isRunning ? 'Pause' : 'Play'}>
