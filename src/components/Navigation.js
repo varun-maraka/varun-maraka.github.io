@@ -25,14 +25,6 @@ function Navigation({ currentPage, onMenuClick }) {
           </li>
           <li className="nav-item">
             <button
-              className={`nav-link ${currentPage === 'services' ? 'active' : ''}`}
-              onClick={() => onMenuClick('services')}
-            >
-              Services
-            </button>
-          </li>
-          <li className="nav-item">
-            <button
               className={`nav-link ${currentPage === 'breathing-techniques' ? 'active' : ''}`}
               onClick={() => onMenuClick('breathing-techniques')}
             >

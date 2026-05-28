@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import Navigation from './components/Navigation';
 import Home from './pages/Home';
 import About from './pages/About';
-import Services from './pages/Services';
 import Contact from './pages/Contact';
 import BreathingTechniques from './pages/BreathingTechniques';
 import './App.css';
@@ -24,8 +23,6 @@ function App() {
     switch (currentPage) {
       case 'about':
         return <About />;
-      case 'services':
-        return <Services />;
       case 'contact':
         return <Contact />;
       case 'breathing-techniques':
