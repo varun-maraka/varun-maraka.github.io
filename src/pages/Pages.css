@@ -217,6 +217,55 @@
   border-radius: 14px;
 }
 
+/* Technique card wrapper (card + fav button) */
+.technique-card-wrap {
+  position: relative;
+}
+
+.fav-btn {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  background: rgba(255,255,255,0.85);
+  border: none;
+  border-radius: 50%;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.18);
+  transition: transform 0.15s ease, background 0.15s ease;
+  padding: 0;
+}
+
+.fav-btn svg path {
+  fill: #ccc;
+  stroke: #aaa;
+  stroke-width: 1;
+  transition: fill 0.15s ease, stroke 0.15s ease;
+}
+
+.fav-btn:hover svg path,
+.fav-btn--active svg path {
+  fill: #e74c3c;
+  stroke: #e74c3c;
+}
+
+.fav-btn:hover {
+  transform: scale(1.15);
+  background: rgba(255,255,255,1);
+}
+
+.technique-section-label {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #555;
+  margin: 24px 0 4px;
+  letter-spacing: 0.03em;
+}
+
 /* Timer two-column layout */
 .timer-layout {
   display: flex;

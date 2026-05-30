@@ -31,6 +31,10 @@ function BreathingTechniques() {
   const [soundEnabled, setSoundEnabled] = useState(false);
   const [showConfirm, setShowConfirm]   = useState(false);
   const [rememberChoice, setRememberChoice] = useState(false);
+  const [favorites, setFavorites]       = useState(() => {
+    try { return JSON.parse(localStorage.getItem('breathingFavorites')) || []; }
+    catch { return []; }
+  });
 
   const intervalRef   = useRef(null);
   const cycleBreakRef = useRef(null);
@@ -160,6 +164,15 @@ function BreathingTechniques() {
   const handleCancelSound = () => {
     setRememberChoice(false);
     setShowConfirm(false);
+  };
+
+  const toggleFavorite = (e, id) => {
+    e.stopPropagation();
+    setFavorites((prev) => {
+      const next = prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id];
+      localStorage.setItem('breathingFavorites', JSON.stringify(next));
+      return next;
+    });
   };
 
   // Map phase label → image filename
@@ -292,6 +305,33 @@ function BreathingTechniques() {
   }
 
   // ── Card grid view ────────────────────────────────────────────────────────
+  const favoriteTechniques = TECHNIQUES.filter((t) => favorites.includes(t.id));
+
+  const TechniqueCard = ({ t }) => (
+    <div key={t.id} className="technique-card-wrap">
+      <button
+        className="technique-card"
+        onClick={() => handleSelectTechnique(t.id)}
+      >
+        <img
+          src={`${process.env.PUBLIC_URL}/techniques/technique_${t.id}.png`}
+          alt={t.name}
+          className="technique-card-img"
+        />
+      </button>
+      <button
+        className={`fav-btn ${favorites.includes(t.id) ? 'fav-btn--active' : ''}`}
+        onClick={(e) => toggleFavorite(e, t.id)}
+        aria-label={favorites.includes(t.id) ? 'Remove from favorites' : 'Add to favorites'}
+        title={favorites.includes(t.id) ? 'Remove from favorites' : 'Add to favorites'}
+      >
+        <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
+          <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+        </svg>
+      </button>
+    </div>
+  );
+
   return (
     <div className="page breathing-page">
       {showConfirm && <ConfirmModal />}
@@ -301,20 +341,18 @@ function BreathingTechniques() {
       />
       <p>Tap a technique to start the guided timer.</p>
 
+      {favoriteTechniques.length > 0 && (
+        <>
+          <h3 className="technique-section-label">❤ Favorites</h3>
+          <div className="technique-grid">
+            {favoriteTechniques.map((t) => <TechniqueCard key={t.id} t={t} />)}
+          </div>
+          <h3 className="technique-section-label">All Techniques</h3>
+        </>
+      )}
+
       <div className="technique-grid">
-        {TECHNIQUES.map((t) => (
-          <button
-            key={t.id}
-            className="technique-card"
-            onClick={() => handleSelectTechnique(t.id)}
-          >
-            <img
-              src={`${process.env.PUBLIC_URL}/techniques/technique_${t.id}.png`}
-              alt={t.name}
-              className="technique-card-img"
-            />
-          </button>
-        ))}
+        {TECHNIQUES.map((t) => <TechniqueCard key={t.id} t={t} />)}
       </div>
     </div>
   );
