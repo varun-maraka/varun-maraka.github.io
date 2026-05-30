@@ -6,7 +6,7 @@ let _trackingCalled = false;
 function getOrCreateDeviceId() {
   let deviceId = localStorage.getItem('_did');
   if (!deviceId) {
-    deviceId = 'dev_' + Math.random().toString(36).slice(2) + Date.now().toString(36);
+    deviceId = Math.random().toString(36).slice(2) + Date.now().toString(36);
     localStorage.setItem('_did', deviceId);
   }
   return deviceId;

@@ -39,6 +39,7 @@ The most complex page. Key details:
 - Timer logic uses `setInterval` via `intervalRef`; a separate `cycleBreakRef` handles inter-cycle pauses
 - Sound preference persisted in `localStorage` (`breathingSoundEnabled`)
 - Phase images served from `public/techniques/phase_*.png` and technique thumbnails from `public/techniques/technique_*.png`
+- **Favorites**: each tile has a heart icon (top-right overlay); clicking toggles favorite status, persisted in `localStorage` (`breathingFavorites` as a JSON array of technique IDs). Favorites appear in a dedicated section at the top of the grid. When favorites count is `>= 7`, favorited items are removed from the "All Techniques" section below; otherwise they appear in both sections.
 
 ### Styling
 Plain CSS files co-located with components. No CSS-in-JS or preprocessor. Key files:
