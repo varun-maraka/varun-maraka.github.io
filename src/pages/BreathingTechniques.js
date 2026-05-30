@@ -14,12 +14,65 @@ const TECHNIQUES = [
   { id: '2-4',     name: '2-4 Breathing',           recommendation: '10–20 cycles',                                               phases: [{ label: 'Inhale', seconds: 2 }, { label: 'Exhale', seconds: 4 }] },
 ];
 
-// Preload audio files
-const PHASE_AUDIO = {
-  Inhale: new Audio(`${process.env.PUBLIC_URL}/techniques/inhale.mp3`),
-  Hold:   new Audio(`${process.env.PUBLIC_URL}/techniques/hold.mp3`),
-  Exhale: new Audio(`${process.env.PUBLIC_URL}/techniques/exhale.mp3`),
-};
+// ── Web Audio API — background-safe audio ─────────────────────────────────
+// Using AudioContext instead of HTML Audio so sound continues when the
+// phone screen locks (HTML Audio gets suspended by the OS; AudioContext
+// with an active silent keepalive loop is treated as a live audio session).
+let sharedAudioCtx = null;
+const audioBuffers  = {};
+let keepAliveNode   = null;
+
+async function getOrCreateContext() {
+  if (!sharedAudioCtx) {
+    sharedAudioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if (sharedAudioCtx.state === 'suspended') {
+    await sharedAudioCtx.resume();
+  }
+  return sharedAudioCtx;
+}
+
+async function preloadAudioBuffers() {
+  const ctx = await getOrCreateContext();
+  await Promise.all(
+    ['Inhale', 'Hold', 'Exhale'].map(async (label) => {
+      if (audioBuffers[label]) return;
+      try {
+        const url = `${process.env.PUBLIC_URL}/techniques/${label.toLowerCase()}.mp3`;
+        const res = await fetch(url);
+        const ab  = await res.arrayBuffer();
+        audioBuffers[label] = await ctx.decodeAudioData(ab);
+      } catch {}
+    })
+  );
+}
+
+function playAudioBuffer(label) {
+  if (!sharedAudioCtx || !audioBuffers[label]) return;
+  const src = sharedAudioCtx.createBufferSource();
+  src.buffer = audioBuffers[label];
+  src.connect(sharedAudioCtx.destination);
+  src.start(0);
+}
+
+function startKeepAlive(ctx) {
+  if (keepAliveNode) return;
+  // A looping silent buffer tells iOS/Android the audio session is still active,
+  // preventing the OS from suspending playback when the screen locks.
+  const buf       = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+  keepAliveNode   = ctx.createBufferSource();
+  keepAliveNode.buffer = buf;
+  keepAliveNode.loop   = true;
+  keepAliveNode.connect(ctx.destination);
+  keepAliveNode.start();
+}
+
+function stopKeepAlive() {
+  if (!keepAliveNode) return;
+  try { keepAliveNode.stop(); } catch {}
+  keepAliveNode.disconnect();
+  keepAliveNode = null;
+}
 
 function BreathingTechniques() {
   const [selectedId, setSelectedId]     = useState(null);
@@ -53,12 +106,41 @@ function BreathingTechniques() {
 
   const currentPhase = selectedTechnique ? selectedTechnique.phases[phaseIndex] : null;
 
+  // ── Keepalive + Media Session ─────────────────────────────────────────────
+  // Start the silent keepalive loop whenever we're running with sound enabled.
+  // This keeps the audio session alive when the phone screen locks.
+  useEffect(() => {
+    if (!isRunning || !soundEnabled) {
+      stopKeepAlive();
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'paused';
+      }
+      return;
+    }
+    // Resume AudioContext (must be driven by a gesture; we start it in handlers,
+    // but call resume here too as a safety net for state changes).
+    getOrCreateContext().then((ctx) => {
+      startKeepAlive(ctx);
+    });
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.metadata = new window.MediaMetadata({
+        title: selectedTechnique ? selectedTechnique.name : 'Breathing Exercise',
+        artist: 'Breathing Timer',
+        album: 'Breathing Techniques',
+      });
+      navigator.mediaSession.playbackState = 'playing';
+      // Pause/play via lock-screen controls
+      navigator.mediaSession.setActionHandler('pause', () => setIsRunning(false));
+      navigator.mediaSession.setActionHandler('play',  () => setIsRunning(true));
+    }
+    return () => {
+      stopKeepAlive();
+    };
+  }, [isRunning, soundEnabled, selectedTechnique]);
+
   // ── Play MP3 for current phase ────────────────────────────────────────────
   const playPhaseAudio = (phaseLabel) => {
-    const audio = PHASE_AUDIO[phaseLabel];
-    if (!audio) return;
-    audio.currentTime = 0;
-    audio.play().catch(() => {}); // silently ignore autoplay errors
+    playAudioBuffer(phaseLabel);
   };
 
   // ── Trigger audio on phase change ─────────────────────────────────────────
@@ -116,9 +198,18 @@ function BreathingTechniques() {
     setPhaseIndex(0);
     setSecondCount(1);
     setCycleCount(0);
+    // Resume AudioContext inside the user gesture so iOS allows audio
+    if (soundEnabled) getOrCreateContext().then(ctx => startKeepAlive(ctx));
   };
 
-  const handleStartPause = () => setIsRunning((prev) => !prev);
+  const handleStartPause = () => {
+    setIsRunning((prev) => {
+      const next = !prev;
+      // Resume inside user gesture for iOS
+      if (next && soundEnabled) getOrCreateContext().then(ctx => startKeepAlive(ctx));
+      return next;
+    });
+  };
 
   const handleReset = () => {
     clearInterval(intervalRef.current);
@@ -159,6 +250,8 @@ function BreathingTechniques() {
     setSoundEnabled(true);
     if (rememberChoice) localStorage.setItem('breathingSoundEnabled', 'true');
     setShowConfirm(false);
+    // Preload + create AudioContext inside this user gesture (required by iOS)
+    preloadAudioBuffers();
   };
 
   const handleCancelSound = () => {
