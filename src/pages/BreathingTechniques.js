@@ -306,6 +306,9 @@ function BreathingTechniques() {
 
   // ── Card grid view ────────────────────────────────────────────────────────
   const favoriteTechniques = TECHNIQUES.filter((t) => favorites.includes(t.id));
+  const allTechniquesList  = favorites.length >= 7
+    ? TECHNIQUES.filter((t) => !favorites.includes(t.id))
+    : TECHNIQUES;
 
   const TechniqueCard = ({ t }) => (
     <div key={t.id} className="technique-card-wrap">
@@ -351,9 +354,11 @@ function BreathingTechniques() {
         </>
       )}
 
-      <div className="technique-grid">
-        {TECHNIQUES.map((t) => <TechniqueCard key={t.id} t={t} />)}
-      </div>
+      {allTechniquesList.length > 0 && (
+        <div className="technique-grid">
+          {allTechniquesList.map((t) => <TechniqueCard key={t.id} t={t} />)}
+        </div>
+      )}
     </div>
   );
 }
