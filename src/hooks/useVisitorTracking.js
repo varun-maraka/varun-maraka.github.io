@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 
-const APPS_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycby9OrPJJzvzbL1Qq5Qvb0UDgJNcHFcbfmZF4o4ZZDWECD0yoFTmoCgpbOgjmhpopBom/exec';
+const FIREBASE_FUNCTION_URL = 'https://us-central1-visitor-tracker-for-githubio.cloudfunctions.net/trackVisitor';
 let _trackingCalled = false;
 
 function getOrCreateDeviceId() {
@@ -23,29 +23,6 @@ function markCalledToday() {
   localStorage.setItem('_tdate', today);
 }
 
-function parseUserAgent() {
-  const ua = navigator.userAgent;
-
-  let browser = 'Unknown';
-  if (/Edg\//.test(ua)) browser = 'Edge';
-  else if (/OPR\/|Opera/.test(ua)) browser = 'Opera';
-  else if (/Chrome\//.test(ua)) browser = 'Chrome';
-  else if (/Firefox\//.test(ua)) browser = 'Firefox';
-  else if (/Safari\//.test(ua)) browser = 'Safari';
-
-  let os = 'Unknown';
-  if (/Windows NT/.test(ua)) os = 'Windows';
-  else if (/Mac OS X/.test(ua)) os = 'macOS';
-  else if (/Android/.test(ua)) os = 'Android';
-  else if (/iPhone|iPad|iPod/.test(ua)) os = 'iOS';
-  else if (/Linux/.test(ua)) os = 'Linux';
-
-  let device = 'Desktop';
-  if (/Mobi|Android/i.test(ua)) device = 'Mobile';
-  else if (/Tablet|iPad/i.test(ua)) device = 'Tablet';
-
-  return { browser, os, device };
-}
 
 export default function useVisitorTracking() {
   useEffect(() => {
@@ -53,33 +30,12 @@ export default function useVisitorTracking() {
     _trackingCalled = true;
 
     const deviceId = getOrCreateDeviceId();
-    const { browser, os, device } = parseUserAgent();
 
-    fetch('https://api.ipify.org?format=json')
-      .then(res => res.json())
-      .then(({ ip }) =>
-        fetch(`https://ipapi.co/${ip}/json/`)
-          .then(res => res.json())
-          .then(geo => {
-            const payload = {
-              deviceId,
-              ip,
-              country: geo.country_name || '',
-              city: geo.city || '',
-              browser,
-              os,
-              device,
-              pageUrl: window.location.href,
-            };
-
-            return fetch(APPS_SCRIPT_URL, {
-              method: 'POST',
-              mode: 'no-cors',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify(payload),
-            });
-          })
-      )
+    fetch(FIREBASE_FUNCTION_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ _did: deviceId, pageUrl: window.location.href }),
+    })
       .then(() => markCalledToday())
       .catch(err => console.error('Visitor tracking failed:', err));
   }, []);

@@ -276,7 +276,7 @@ function BreathingTechniques() {
       // iOS: resume AudioContext (user gesture), schedule audio, start RAF display
       const technique = TECHNIQUES.find((t) => t.id === id);
       if (technique) {
-        getOrCreateContext().then((ctx) => {
+        (soundEnabled ? preloadAudioBuffers() : Promise.resolve()).then(() => getOrCreateContext()).then((ctx) => {
           startKeepAlive(ctx);
           const start = ctx.currentTime;
           iosSessionStart.current = start;
@@ -294,8 +294,19 @@ function BreathingTechniques() {
         });
       }
     } else {
-      // Android / desktop: resume AudioContext on user gesture
-      if (soundEnabled) getOrCreateContext().then((ctx) => startKeepAlive(ctx));
+      // Android / desktop: resume AudioContext on user gesture; also preload buffers
+      // if sound is enabled but buffers haven't been loaded yet (e.g. after page refresh
+      // where soundEnabled was restored from localStorage but preloadAudioBuffers was
+      // never called).
+      if (soundEnabled) preloadAudioBuffers().then(() => {
+        startKeepAlive(sharedAudioCtx);
+        // Play the first phase audio now that buffers are ready — the phase-change
+        // effect already fired (phaseIndex=0) before buffers were loaded, so we
+        // missed it. Only play if we're still on the opening phase.
+        const technique = TECHNIQUES.find((t) => t.id === id);
+        if (technique) playAudioBuffer(technique.phases[0].label);
+      });
+      else getOrCreateContext().then((ctx) => startKeepAlive(ctx));
     }
   };
 
