@@ -74,6 +74,71 @@ function stopKeepAlive() {
   keepAliveNode = null;
 }
 
+// ── iOS / iPadOS detection ────────────────────────────────────────────────
+// iOS suspends JS (setInterval, RAF) when the screen locks, so we use a
+// different strategy there: pre-schedule audio cues at absolute AudioContext
+// times (handled by hardware, not JS) and use RAF only for display updates.
+function isIOSDevice() {
+  return (
+    /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+    // iPadOS 13+ reports as MacIntel with touch support
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+  );
+}
+
+// ── iOS-specific audio pre-scheduling ────────────────────────────────────
+let scheduledSources = [];   // AudioBufferSourceNodes scheduled for future play
+let iosRafId         = null; // requestAnimationFrame handle
+
+// Schedule audio cues for `maxCycles` cycles starting at absolute ctx time
+// `sessionStart`. Skips any events already in the past.
+function scheduleSessionAudio(ctx, phases, sessionStart, maxCycles = 40) {
+  cancelScheduledAudio();
+  const cycleDuration = phases.reduce((s, p) => s + p.seconds, 0);
+  const now = ctx.currentTime;
+
+  for (let cycle = 0; cycle < maxCycles; cycle++) {
+    let phaseOffset = 0;
+    for (const { label, seconds } of phases) {
+      const fireAt = sessionStart + cycle * cycleDuration + phaseOffset;
+      // Only schedule future events (with a small tolerance for immediate ones)
+      if (fireAt >= now - 0.05 && audioBuffers[label]) {
+        const src = ctx.createBufferSource();
+        src.buffer = audioBuffers[label];
+        src.connect(ctx.destination);
+        src.start(Math.max(fireAt, now));
+        scheduledSources.push(src);
+      }
+      phaseOffset += seconds;
+    }
+  }
+}
+
+function cancelScheduledAudio() {
+  scheduledSources.forEach((s) => { try { s.stop(); } catch {} });
+  scheduledSources = [];
+}
+
+function stopIosRaf() {
+  if (iosRafId) { cancelAnimationFrame(iosRafId); iosRafId = null; }
+}
+
+// Compute {phaseIndex, secondCount, cycleCount} from elapsed seconds
+function computeStateFromElapsed(elapsed, phases) {
+  const cycleDuration = phases.reduce((s, p) => s + p.seconds, 0);
+  if (elapsed < 0) return { phaseIndex: 0, secondCount: 1, cycleCount: 0 };
+  const cycleCount  = Math.floor(elapsed / cycleDuration);
+  const cycleElapsed = elapsed % cycleDuration;
+  let t = 0;
+  let phaseIndex = 0;
+  for (let i = 0; i < phases.length; i++) {
+    if (cycleElapsed < t + phases[i].seconds) { phaseIndex = i; break; }
+    t += phases[i].seconds;
+  }
+  const secondCount = Math.min(Math.floor(cycleElapsed - t) + 1, phases[phaseIndex].seconds);
+  return { phaseIndex, secondCount, cycleCount };
+}
+
 function BreathingTechniques() {
   const [selectedId, setSelectedId]     = useState(null);
   const [isRunning, setIsRunning]       = useState(false);
@@ -89,9 +154,11 @@ function BreathingTechniques() {
     catch { return []; }
   });
 
-  const intervalRef   = useRef(null);
-  const cycleBreakRef = useRef(null);
-  const prevPhaseRef  = useRef(null);
+  const intervalRef      = useRef(null);
+  const cycleBreakRef    = useRef(null);
+  const prevPhaseRef     = useRef(null);
+  const iosSessionStart  = useRef(null); // ctx.currentTime when iOS session began
+  const iosPausedOffset  = useRef(0);    // seconds elapsed when paused on iOS
 
   // Load saved sound preference on mount
   useEffect(() => {
@@ -129,9 +196,10 @@ function BreathingTechniques() {
         album: 'Breathing Techniques',
       });
       navigator.mediaSession.playbackState = 'playing';
-      // Pause/play via lock-screen controls
-      navigator.mediaSession.setActionHandler('pause', () => setIsRunning(false));
-      navigator.mediaSession.setActionHandler('play',  () => setIsRunning(true));
+      // Pause/play via lock-screen controls — route through handleStartPause
+      // so iOS RAF + audio rescheduling logic is triggered correctly
+      navigator.mediaSession.setActionHandler('pause', () => handleStartPause());
+      navigator.mediaSession.setActionHandler('play',  () => handleStartPause());
     }
     return () => {
       stopKeepAlive();
@@ -143,8 +211,9 @@ function BreathingTechniques() {
     playAudioBuffer(phaseLabel);
   };
 
-  // ── Trigger audio on phase change ─────────────────────────────────────────
+  // ── Trigger audio on phase change (Android / desktop only) ──────────────
   useEffect(() => {
+    if (isIOSDevice()) return; // iOS audio is pre-scheduled via AudioContext time
     if (!soundEnabled || !isRunning || !currentPhase) return;
     if (prevPhaseRef.current === phaseIndex && prevPhaseRef.selectedId === selectedId) return;
     prevPhaseRef.current = phaseIndex;
@@ -153,8 +222,9 @@ function BreathingTechniques() {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phaseIndex, selectedId, isRunning, soundEnabled]);
 
-  // ── Timer tick ────────────────────────────────────────────────────────────
+  // ── Timer tick (Android / desktop only — iOS uses AudioContext RAF loop) ──
   useEffect(() => {
+    if (isIOSDevice()) return undefined; // iOS handles timing via RAF + ctx.currentTime
     if (!isRunning || !currentPhase || isCycleBreak) return undefined;
 
     intervalRef.current = setInterval(() => {
@@ -191,30 +261,93 @@ function BreathingTechniques() {
   const handleSelectTechnique = (id) => {
     clearInterval(intervalRef.current);
     clearTimeout(cycleBreakRef.current);
+    stopIosRaf();
+    cancelScheduledAudio();
     prevPhaseRef.current = null;
+    iosPausedOffset.current = 0;
     setSelectedId(id);
     setIsRunning(true);
     setIsCycleBreak(false);
     setPhaseIndex(0);
     setSecondCount(1);
     setCycleCount(0);
-    // Resume AudioContext inside the user gesture so iOS allows audio
-    if (soundEnabled) getOrCreateContext().then(ctx => startKeepAlive(ctx));
+
+    if (isIOSDevice()) {
+      // iOS: resume AudioContext (user gesture), schedule audio, start RAF display
+      const technique = TECHNIQUES.find((t) => t.id === id);
+      if (technique) {
+        getOrCreateContext().then((ctx) => {
+          startKeepAlive(ctx);
+          const start = ctx.currentTime;
+          iosSessionStart.current = start;
+          if (soundEnabled) scheduleSessionAudio(ctx, technique.phases, start);
+          // RAF loop drives visual display from ctx.currentTime
+          function tick() {
+            const elapsed = ctx.currentTime - iosSessionStart.current;
+            const state = computeStateFromElapsed(elapsed, technique.phases);
+            setPhaseIndex(state.phaseIndex);
+            setSecondCount(state.secondCount);
+            setCycleCount(state.cycleCount);
+            iosRafId = requestAnimationFrame(tick);
+          }
+          iosRafId = requestAnimationFrame(tick);
+        });
+      }
+    } else {
+      // Android / desktop: resume AudioContext on user gesture
+      if (soundEnabled) getOrCreateContext().then((ctx) => startKeepAlive(ctx));
+    }
   };
 
   const handleStartPause = () => {
-    setIsRunning((prev) => {
-      const next = !prev;
-      // Resume inside user gesture for iOS
-      if (next && soundEnabled) getOrCreateContext().then(ctx => startKeepAlive(ctx));
-      return next;
-    });
+    if (isIOSDevice()) {
+      if (isRunning) {
+        // Pause: record how far we are, stop RAF and scheduled audio
+        if (sharedAudioCtx && iosSessionStart.current !== null) {
+          iosPausedOffset.current = sharedAudioCtx.currentTime - iosSessionStart.current;
+        }
+        stopIosRaf();
+        cancelScheduledAudio();
+        stopKeepAlive();
+        setIsRunning(false);
+      } else {
+        // Resume: rebase session start so elapsed picks up from pause point
+        setIsRunning(true);
+        if (selectedTechnique) {
+          getOrCreateContext().then((ctx) => {
+            startKeepAlive(ctx);
+            const resumeStart = ctx.currentTime - iosPausedOffset.current;
+            iosSessionStart.current = resumeStart;
+            if (soundEnabled) scheduleSessionAudio(ctx, selectedTechnique.phases, resumeStart);
+            function tick() {
+              const elapsed = ctx.currentTime - iosSessionStart.current;
+              const state = computeStateFromElapsed(elapsed, selectedTechnique.phases);
+              setPhaseIndex(state.phaseIndex);
+              setSecondCount(state.secondCount);
+              setCycleCount(state.cycleCount);
+              iosRafId = requestAnimationFrame(tick);
+            }
+            iosRafId = requestAnimationFrame(tick);
+          });
+        }
+      }
+    } else {
+      setIsRunning((prev) => {
+        const next = !prev;
+        if (next && soundEnabled) getOrCreateContext().then((ctx) => startKeepAlive(ctx));
+        return next;
+      });
+    }
   };
 
   const handleReset = () => {
     clearInterval(intervalRef.current);
     clearTimeout(cycleBreakRef.current);
+    stopIosRaf();
+    cancelScheduledAudio();
     prevPhaseRef.current = null;
+    iosSessionStart.current = null;
+    iosPausedOffset.current = 0;
     setIsRunning(false);
     setIsCycleBreak(false);
     setPhaseIndex(0);
@@ -225,7 +358,11 @@ function BreathingTechniques() {
   const handleBack = () => {
     clearInterval(intervalRef.current);
     clearTimeout(cycleBreakRef.current);
+    stopIosRaf();
+    cancelScheduledAudio();
     prevPhaseRef.current = null;
+    iosSessionStart.current = null;
+    iosPausedOffset.current = 0;
     setSelectedId(null);
     setIsRunning(false);
     setIsCycleBreak(false);
@@ -251,7 +388,12 @@ function BreathingTechniques() {
     if (rememberChoice) localStorage.setItem('breathingSoundEnabled', 'true');
     setShowConfirm(false);
     // Preload + create AudioContext inside this user gesture (required by iOS)
-    preloadAudioBuffers();
+    preloadAudioBuffers().then(() => {
+      // If a session is already running on iOS, schedule audio from current position
+      if (isIOSDevice() && isRunning && selectedTechnique && iosSessionStart.current !== null && sharedAudioCtx) {
+        scheduleSessionAudio(sharedAudioCtx, selectedTechnique.phases, iosSessionStart.current);
+      }
+    });
   };
 
   const handleCancelSound = () => {
