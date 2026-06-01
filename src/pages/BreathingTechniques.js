@@ -20,7 +20,9 @@ const TECHNIQUES = [
 // with an active silent keepalive loop is treated as a live audio session).
 let sharedAudioCtx = null;
 const audioBuffers  = {};
-let keepAliveNode   = null;
+let keepAliveNode     = null; // Android / desktop keepalive node
+let iosKeepAliveOsc  = null; // iOS-specific oscillator keepalive
+let iosKeepAliveGain = null;
 
 async function getOrCreateContext() {
   if (!sharedAudioCtx) {
@@ -55,12 +57,11 @@ function playAudioBuffer(label) {
   src.start(0);
 }
 
+// Android / desktop keepalive — silent looping buffer (unchanged from original)
 function startKeepAlive(ctx) {
   if (keepAliveNode) return;
-  // A looping silent buffer tells iOS/Android the audio session is still active,
-  // preventing the OS from suspending playback when the screen locks.
-  const buf       = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
-  keepAliveNode   = ctx.createBufferSource();
+  const buf     = ctx.createBuffer(1, ctx.sampleRate * 2, ctx.sampleRate);
+  keepAliveNode = ctx.createBufferSource();
   keepAliveNode.buffer = buf;
   keepAliveNode.loop   = true;
   keepAliveNode.connect(ctx.destination);
@@ -72,6 +73,29 @@ function stopKeepAlive() {
   try { keepAliveNode.stop(); } catch {}
   keepAliveNode.disconnect();
   keepAliveNode = null;
+}
+
+// iOS-only keepalive — near-inaudible oscillator.
+// iOS detects a pure-zero buffer as silence and suspends the AudioContext;
+// an oscillator at 0.001 gain (~60 dB below full scale) registers as real
+// audio output and keeps the session alive when the screen locks.
+function startIosKeepAlive(ctx) {
+  if (iosKeepAliveOsc) return;
+  iosKeepAliveGain = ctx.createGain();
+  iosKeepAliveGain.gain.value = 0.001;
+  iosKeepAliveOsc  = ctx.createOscillator();
+  iosKeepAliveOsc.frequency.value = 440;
+  iosKeepAliveOsc.connect(iosKeepAliveGain);
+  iosKeepAliveGain.connect(ctx.destination);
+  iosKeepAliveOsc.start();
+}
+
+function stopIosKeepAlive() {
+  if (!iosKeepAliveOsc) return;
+  try { iosKeepAliveOsc.stop(); } catch {}
+  iosKeepAliveOsc.disconnect();
+  if (iosKeepAliveGain) { iosKeepAliveGain.disconnect(); iosKeepAliveGain = null; }
+  iosKeepAliveOsc = null;
 }
 
 // ── iOS / iPadOS detection ────────────────────────────────────────────────
@@ -178,7 +202,7 @@ function BreathingTechniques() {
   // This keeps the audio session alive when the phone screen locks.
   useEffect(() => {
     if (!isRunning || !soundEnabled) {
-      stopKeepAlive();
+      isIOSDevice() ? stopIosKeepAlive() : stopKeepAlive();
       if ('mediaSession' in navigator) {
         navigator.mediaSession.playbackState = 'paused';
       }
@@ -187,7 +211,7 @@ function BreathingTechniques() {
     // Resume AudioContext (must be driven by a gesture; we start it in handlers,
     // but call resume here too as a safety net for state changes).
     getOrCreateContext().then((ctx) => {
-      startKeepAlive(ctx);
+      isIOSDevice() ? startIosKeepAlive(ctx) : startKeepAlive(ctx);
     });
     if ('mediaSession' in navigator) {
       navigator.mediaSession.metadata = new window.MediaMetadata({
@@ -202,7 +226,7 @@ function BreathingTechniques() {
       navigator.mediaSession.setActionHandler('play',  () => handleStartPause());
     }
     return () => {
-      stopKeepAlive();
+      isIOSDevice() ? stopIosKeepAlive() : stopKeepAlive();
     };
   }, [isRunning, soundEnabled, selectedTechnique]);
 
@@ -273,15 +297,17 @@ function BreathingTechniques() {
     setCycleCount(0);
 
     if (isIOSDevice()) {
-      // iOS: resume AudioContext (user gesture), schedule audio, start RAF display
+      // iOS: getOrCreateContext() MUST be called first, synchronously within
+      // the user gesture. Calling it after an async preload means iOS has already
+      // exited the gesture window and will refuse to resume the AudioContext.
       const technique = TECHNIQUES.find((t) => t.id === id);
       if (technique) {
-        (soundEnabled ? preloadAudioBuffers() : Promise.resolve()).then(() => getOrCreateContext()).then((ctx) => {
-          startKeepAlive(ctx);
+        getOrCreateContext().then((ctx) => {
+          startIosKeepAlive(ctx);
           const start = ctx.currentTime;
           iosSessionStart.current = start;
-          if (soundEnabled) scheduleSessionAudio(ctx, technique.phases, start);
-          // RAF loop drives visual display from ctx.currentTime
+
+          // Start RAF immediately — display updates right away
           function tick() {
             const elapsed = ctx.currentTime - iosSessionStart.current;
             const state = computeStateFromElapsed(elapsed, technique.phases);
@@ -291,22 +317,33 @@ function BreathingTechniques() {
             iosRafId = requestAnimationFrame(tick);
           }
           iosRafId = requestAnimationFrame(tick);
+
+          // Preload buffers THEN schedule — ctx is already running at this point
+          if (soundEnabled) {
+            preloadAudioBuffers().then(() => {
+              if (iosSessionStart.current !== null) {
+                scheduleSessionAudio(ctx, technique.phases, iosSessionStart.current);
+              }
+            });
+          }
         });
       }
     } else {
-      // Android / desktop: resume AudioContext on user gesture; also preload buffers
-      // if sound is enabled but buffers haven't been loaded yet (e.g. after page refresh
-      // where soundEnabled was restored from localStorage but preloadAudioBuffers was
-      // never called).
-      if (soundEnabled) preloadAudioBuffers().then(() => {
-        startKeepAlive(sharedAudioCtx);
-        // Play the first phase audio now that buffers are ready — the phase-change
-        // effect already fired (phaseIndex=0) before buffers were loaded, so we
-        // missed it. Only play if we're still on the opening phase.
-        const technique = TECHNIQUES.find((t) => t.id === id);
-        if (technique) playAudioBuffer(technique.phases[0].label);
-      });
-      else getOrCreateContext().then((ctx) => startKeepAlive(ctx));
+      // Android / desktop: resume AudioContext on user gesture; preload buffers
+      // in case they weren't loaded yet (e.g. sound pref restored from localStorage).
+      if (soundEnabled) {
+        getOrCreateContext().then((ctx) => {
+          startKeepAlive(ctx);
+          preloadAudioBuffers().then(() => {
+            // Play the first phase cue — the phase-change effect already fired
+            // before buffers were ready, so trigger it manually now.
+            const technique = TECHNIQUES.find((t) => t.id === id);
+            if (technique) playAudioBuffer(technique.phases[0].label);
+          });
+        });
+      } else {
+        getOrCreateContext().then((ctx) => startKeepAlive(ctx));
+      }
     }
   };
 
@@ -319,17 +356,17 @@ function BreathingTechniques() {
         }
         stopIosRaf();
         cancelScheduledAudio();
-        stopKeepAlive();
+        stopIosKeepAlive();
         setIsRunning(false);
       } else {
-        // Resume: rebase session start so elapsed picks up from pause point
+        // Resume: rebase session start so elapsed picks up from pause point.
+        // getOrCreateContext() is called first (inside user gesture).
         setIsRunning(true);
         if (selectedTechnique) {
           getOrCreateContext().then((ctx) => {
-            startKeepAlive(ctx);
+            startIosKeepAlive(ctx);
             const resumeStart = ctx.currentTime - iosPausedOffset.current;
             iosSessionStart.current = resumeStart;
-            if (soundEnabled) scheduleSessionAudio(ctx, selectedTechnique.phases, resumeStart);
             function tick() {
               const elapsed = ctx.currentTime - iosSessionStart.current;
               const state = computeStateFromElapsed(elapsed, selectedTechnique.phases);
@@ -339,6 +376,13 @@ function BreathingTechniques() {
               iosRafId = requestAnimationFrame(tick);
             }
             iosRafId = requestAnimationFrame(tick);
+            if (soundEnabled) {
+              preloadAudioBuffers().then(() => {
+                if (iosSessionStart.current !== null) {
+                  scheduleSessionAudio(ctx, selectedTechnique.phases, iosSessionStart.current);
+                }
+              });
+            }
           });
         }
       }

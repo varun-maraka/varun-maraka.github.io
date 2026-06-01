@@ -4,18 +4,20 @@ A React application with React Router that works seamlessly on GitHub Pages. Eac
 
 ## Features
 
-✅ **4 Menu Items** - Home, About, Services, Contact  
+✅ **4 Menu Items** - Home, About, Contact, Breathing Techniques  
 ✅ **Separate Pages** - Each menu item has its own dedicated content  
-✅ **React Router Integration** - Smooth client-side navigation  
+✅ **Hash-based routing** - Navigation via `window.location.hash` (no React Router)  
 ✅ **GitHub Pages Compatible** - Works perfectly on GitHub Pages  
 ✅ **Hamburger Menu** - Responsive mobile-friendly navigation  
 ✅ **Modern Styling** - Clean and professional design  
 ✅ **Form Handling** - Contact form with validation  
+✅ **Breathing Techniques** - Guided breathing timer with audio cues and favorites  
 
 ## Tech Stack
 
 - **React** 18.2.0
-- **React Router DOM** 6.20.0
+- **Redux** - Hamburger menu state only (`isMenuOpen`)
+- **Web Audio API** - Background-safe audio for breathing techniques
 - **react-scripts** 5.0.1
 - **gh-pages** - For GitHub Pages deployment
 
@@ -24,21 +26,26 @@ A React application with React Router that works seamlessly on GitHub Pages. Eac
 ```
 src/
 ├── components/
-│   ├── Navigation.js       # Navigation menu component
-│   └── Navigation.css      # Navigation styling
+│   ├── Navigation.js           # Navigation menu component
+│   └── Navigation.css          # Navigation styling
+├── hooks/
+│   └── useVisitorTracking.js   # Visitor tracking (fires once/device/day)
 ├── pages/
-│   ├── Home.js             # Home page
-│   ├── About.js            # About page
-│   ├── Services.js         # Services page
-│   ├── Contact.js          # Contact page
-│   └── Pages.css           # Pages styling
-├── App.js                  # Main app component
-├── App.css                 # App styling
-├── index.js                # React entry point
-└── index.css               # Global styles
+│   ├── Home.js                 # Home page
+│   ├── About.js                # About page
+│   ├── Contact.js              # Contact page
+│   ├── BreathingTechniques.js  # Breathing timer with Web Audio API
+│   └── Pages.css               # Pages styling
+├── redux/
+│   └── ...                     # Hamburger menu state (isMenuOpen)
+├── App.js                      # Main app component; hash-based routing
+├── App.css                     # App styling
+├── index.js                    # React entry point
+└── index.css                   # Global styles
 
 public/
-└── index.html              # HTML template
+├── techniques/                 # Audio (inhale.mp3, hold.mp3, exhale.mp3) + images
+└── index.html                  # HTML template
 
 package.json                # Dependencies and scripts
 ```
@@ -158,10 +165,27 @@ Ans: It is created earlier and it will not be used in rendering the website.
 - List of features
 - Company mission
 
-### Services Page
-- Grid of service cards
-- 4 different services with descriptions
-- Hover effects
+### Breathing Techniques Page
+- 10 guided breathing techniques (Box, 4-7-8, 5-5, 7-11, etc.)
+- Animated phase timer with voice cues (inhale / hold / exhale MP3s)
+- Audio built on the **Web Audio API** (`AudioContext`) — not HTML Audio elements — for better background behaviour
+- Sound preference remembered across sessions (`localStorage`)
+- Favorites system — heart icon on each tile, persisted in `localStorage`
+
+**Platform audio behaviour:**
+
+| Platform | Audio when screen locked |
+|---|---|
+| Android (Chrome) | ✅ Works |
+| Desktop (Chrome / Firefox / Safari) | ✅ Works (screen doesn't lock) |
+| iOS / iPadOS (Safari) | ❌ Does not work (see below) |
+
+**Android / Desktop:** uses a silent looping buffer (keepalive) + Media Session API so the OS keeps the audio session alive. Phase cues play via `playAudioBuffer()` triggered on each phase change.
+
+**iOS / iPadOS:** uses a different strategy — all audio cues for up to 40 cycles are pre-scheduled at absolute `AudioContext` timestamps when the session starts. These are handled by audio hardware, not JavaScript, so they should fire even when JS is suspended. A near-inaudible oscillator (0.001 gain) keeps the `AudioContext` registered as an active audio session.
+
+**Known limitation — iOS screen lock:**
+Audio cues stop when the iPhone/iPad screen locks. This is a fundamental iOS Safari restriction — web apps cannot maintain an audio session across screen lock the way native apps can (native apps use Apple's `AVAudioSession` API, which is not accessible from the browser). The following approaches were tried and none worked reliably: HTML Audio, Web Audio API pre-scheduling, silent-buffer keepalive, oscillator keepalive, Media Session API. This issue is not being pursued further.
 
 ### Contact Page
 - Contact form with validation
@@ -190,10 +214,11 @@ The navigation bar contains 4 menu items:
 
 ## Browser Support
 
-- Chrome (latest)
-- Firefox (latest)
-- Safari (latest)
-- Edge (latest)
+- Chrome (latest) — full support including background audio
+- Firefox (latest) — full support including background audio
+- Safari on macOS (latest) — full support
+- Edge (latest) — full support
+- Safari on iOS / iPadOS — supported, but audio stops when screen locks (platform limitation)
 
 ## Available Scripts
 
@@ -298,4 +323,4 @@ Varun Maraka
 
 ---
 
-**Last Updated:** February 16, 2026
+**Last Updated:** May 31, 2026
